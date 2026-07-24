@@ -22,3 +22,91 @@
 /* Phase 1 live-product additions */
 .setup-banner{position:relative;z-index:55;padding:11px max(4vw,20px);display:flex;justify-content:center;gap:8px;align-items:center;background:#fff2c7;border-bottom:1px solid rgba(23,33,29,.12);color:#5b4612;font-size:12px}.setup-banner span{color:#76612c}.setup-banner code{padding:2px 5px;border-radius:5px;background:rgba(255,255,255,.65);font-size:10px}.auth-btn{min-height:40px;padding:0 16px;border:1px solid var(--line);border-radius:999px;color:var(--forest);background:var(--paper);font-size:12px;font-weight:900}.auth-modal{padding:30px}.auth-logo{display:flex;gap:12px;align-items:center;margin-bottom:22px}.auth-logo strong,.auth-logo span{display:block}.auth-logo strong{font:800 18px "Manrope"}.auth-logo span{margin-top:4px;color:var(--muted);font-size:10px}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;padding:4px;border-radius:999px;background:var(--mint-light);margin-bottom:24px}.auth-tabs button{min-height:38px;border:0;border-radius:999px;color:var(--muted);background:transparent;font-size:11px;font-weight:900}.auth-tabs button.active{color:white;background:var(--forest)}.auth-modal h2{margin:0;font:800 28px "Manrope";letter-spacing:-.045em}.auth-modal>p{color:var(--muted);font-size:11px;line-height:1.5}.auth-form{display:grid;gap:12px;margin-top:20px}.auth-form label{color:var(--forest);font-size:10px;font-weight:900}.auth-form input{width:100%;margin-top:7px;padding:13px 14px;border:1px solid rgba(23,33,29,.15);border-radius:12px;outline:0;background:#fff;color:var(--ink)}.auth-form input:focus{border-color:var(--coral);box-shadow:0 0 0 3px rgba(215,109,72,.1)}.forgot-btn{width:100%;margin-top:12px;border:0;color:var(--coral);background:transparent;font-size:10px;font-weight:900}.auth-message{min-height:17px;margin:12px 0 0!important;text-align:center;color:var(--coral)!important;font-size:10px!important}.auth-privacy{margin:15px 0 0!important;padding-top:14px;border-top:1px solid var(--line);text-align:center;font-size:9px!important}.loading-state{padding:42px 20px;text-align:center;border:1px solid var(--line);border-radius:20px;background:var(--paper);color:var(--muted);font-size:11px}.loading-state strong{display:block;margin-bottom:5px;color:var(--forest);font:800 15px "Manrope"}.loading-spinner{width:26px;height:26px;margin:0 auto 12px;border:3px solid var(--mint);border-top-color:var(--forest);border-radius:50%;animation:sangai-spin .8s linear infinite}@keyframes sangai-spin{to{transform:rotate(360deg)}}.real-status{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;color:#176244;background:#dff3e7;font-size:9px;font-weight:900}.real-status:before{content:"";width:6px;height:6px;border-radius:50%;background:#249b68}.profile-actions{display:flex;gap:8px;align-items:center}.signout-btn{min-height:39px;padding:0 14px;border:1px solid rgba(170,55,41,.22);border-radius:999px;color:#a63729;background:#fff;font-size:10px;font-weight:900}.form-error{padding:10px 12px;border-radius:10px;color:#902f24;background:#fde3df;font-size:10px}.conversation-empty{min-height:350px;display:grid;place-items:center;padding:30px;text-align:center;color:var(--muted)}.conversation-empty strong{display:block;margin-bottom:5px;color:var(--forest);font:800 18px "Manrope"}.notification-btn span.hidden{display:none}.connection-note{margin-top:10px;color:var(--muted);font-size:9px}.profile-overview-card .profile-main{min-width:0}.profile-overview-card .profile-main>div{min-width:0}.ride-live-note{margin-top:10px;padding:9px 11px;border-radius:10px;color:#176244;background:#e6f5ec;font-size:9px;font-weight:800}.pending-verification-note{padding:11px;border-radius:11px;color:#6b5200;background:#fff1bd;font-size:9px;line-height:1.5}
 @media(max-width:760px){.setup-banner{padding:9px 13px;display:block;text-align:center;line-height:1.45}.setup-banner strong,.setup-banner span{display:block}.auth-btn{min-height:36px;padding:0 12px}.language-btn{display:none}.auth-modal{padding:25px 20px}.profile-actions{width:100%;margin-top:14px}.profile-actions button{flex:1}}
+
+
+/* ==========================================================================
+   Sangai final brand and production polish
+   ========================================================================== */
+:root{
+  --forest:#123c31;
+  --forest-2:#0a2d24;
+  --amber:#f3b64a;
+  --coral:#cf6948;
+  --paper:#ffffff;
+  --cream:#f6f7f3;
+  --mint:#e9f2ed;
+  --mint-light:#f3f8f5;
+  --ink:#17231e;
+  --muted:#68746e;
+  --line:rgba(18,45,37,.11);
+  --shadow:0 20px 58px rgba(18,45,37,.09);
+  --shadow-soft:0 8px 26px rgba(18,45,37,.065)
+}
+body{background:var(--cream)}
+.prototype-strip{display:none!important}
+.app-header{height:70px;background:rgba(255,255,255,.94);box-shadow:0 1px 0 var(--line)}
+.header-inner{max-width:1240px}
+.brand-mark{border-radius:13px;box-shadow:none}
+.brand-copy small{color:var(--coral);font-size:10px;letter-spacing:.08em}
+.nav-link{font-size:13px}
+.setup-banner{background:#fff4cf}
+.home-shell{padding-top:58px}
+.welcome-row{align-items:center;margin-bottom:22px}
+.welcome-row h1{font-size:clamp(40px,5vw,62px);letter-spacing:-.06em}
+.welcome-row>div>p:last-child{font-size:15px;max-width:600px}
+.driver-shortcut{min-width:300px;border-radius:18px;box-shadow:none}
+.search-panel{border-radius:24px;border:1px solid rgba(18,45,37,.1);box-shadow:var(--shadow)}
+.location-field input{font-size:18px}
+.location-field small{font-size:10px}
+.date-chip{background:#fff}
+.popular-row{padding-top:14px}
+.popular-row button{background:#f7faf8}
+.trust-summary{gap:12px}
+.trust-summary article{background:transparent;border:0;box-shadow:none;padding:14px}
+.result-section{margin-top:44px}
+.result-heading h2{font-size:34px}
+.ride-card{border-radius:20px;box-shadow:none;border:1px solid var(--line)}
+.ride-card:hover{box-shadow:var(--shadow-soft)}
+.ride-side{min-width:0}
+.driver-avatar.has-photo,.review-avatar.has-photo,.profile-avatar.has-photo{overflow:hidden;background:#dfe9e3}
+.driver-avatar.has-photo img,.review-avatar.has-photo img,.profile-avatar.has-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.profile-avatar.has-photo{padding:0}
+.profile-bio{max-width:640px;margin:9px 0 0;color:var(--muted);font-size:12px;line-height:1.55}
+.content-card{box-shadow:none;border-color:var(--line)}
+.profile-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.wide-card{grid-column:1/-1}
+.vehicle-profile-list{display:grid;gap:9px;margin-bottom:15px}
+.profile-vehicle{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--mint-light)}
+.vehicle-icon{width:38px;height:38px;display:grid;place-items:center;border-radius:11px;color:var(--forest);background:#fff}
+.vehicle-icon svg{width:20px}
+.profile-vehicle strong,.profile-vehicle span{display:block}
+.profile-vehicle strong{font-size:11px}
+.profile-vehicle div span{margin-top:3px;color:var(--muted);font-size:9px}
+.preference-editor{display:grid;gap:8px;margin-top:18px}
+.preference-editor label{padding:12px;display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:12px;background:var(--mint-light);font-size:11px;font-weight:700}
+.preference-editor .primary-btn{margin-top:8px}
+.field-help{display:block;margin-top:5px;color:var(--muted);font-size:9px;font-weight:500}
+.auth-form select,.auth-form textarea{width:100%;margin-top:7px;padding:13px 14px;border:1px solid rgba(23,33,29,.15);border-radius:12px;outline:0;background:#fff;color:var(--ink)}
+.auth-form textarea{min-height:115px;resize:vertical}
+.optional{color:var(--muted);font-weight:500}
+.legal-copy p{font-size:12px;line-height:1.7}
+.product-footer{max-width:none;min-height:130px;padding:30px max(5vw,24px);display:grid;grid-template-columns:1fr auto auto;gap:30px;align-items:center;background:#fff}
+.footer-brand strong,.footer-brand span{display:block}
+.footer-brand strong{font:800 18px "Manrope"}
+.footer-brand span{margin-top:4px;color:var(--muted);font-size:10px}
+.footer-links{display:flex;gap:6px}
+.footer-links button{padding:8px 10px;border:0;border-radius:9px;color:var(--muted);background:transparent;font-size:10px;font-weight:800}
+.footer-links button:hover{color:var(--forest);background:var(--mint-light)}
+.product-footer small{color:var(--muted)}
+@media(max-width:760px){
+  .app-header{height:62px}
+  .home-shell{padding-top:34px}
+  .welcome-row h1{font-size:38px}
+  .driver-shortcut{min-width:0}
+  .search-panel{border-radius:20px}
+  .location-field input{font-size:17px}
+  .trust-summary article{padding:10px}
+  .profile-grid{grid-template-columns:1fr}
+  .product-footer{display:block;padding:26px 16px}
+  .footer-links{margin:18px 0 14px;flex-wrap:wrap}
+}

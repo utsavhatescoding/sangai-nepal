@@ -30,10 +30,17 @@
     pendingView: null,
     pendingAction: null,
     authMode: "login",
-    channels: []
+    channels: [],
+    vehicles: []
   };
 
   const protectedViews = new Set(["offer", "journeys", "inbox", "profile", "safety"]);
+  const NEPAL_PLACES = ["Kathmandu", "Kalanki", "Koteshwor", "New Baneshwor", "Gaushala", "Chabahil", "Balaju", "Gongabu", "Maharajgunj", "Kirtipur", "Thankot", "Satungal", "Nagdhunga", "Lalitpur", "Lagankhel", "Satdobato", "Gwarko", "Balkhu", "Bhaktapur", "Suryabinayak", "Jagati", "Madhyapur Thimi", "Dhulikhel", "Banepa", "Panauti", "Khurkot", "Sindhuli", "Bardibas", "Daman", "Palung", "Naubise", "Galchhi", "Mugling", "Kurintar", "Hetauda", "Hetauda Bus Park", "Chauki Tole", "Bharatpur", "Narayangarh", "Sauraha", "Ratnanagar", "Tandi", "Pokhara", "Lakeside", "Prithvi Chowk", "Bagar", "Hemja", "Damauli", "Dumre", "Bandipur", "Gorkha", "Waling", "Syangja", "Baglung", "Kusma", "Beni", "Butwal", "Traffic Chowk Butwal", "Bhairahawa", "Siddharthanagar", "Lumbini", "Tansen", "Bardghat", "Parasi", "Kapilvastu", "Birgunj", "Simara", "Pathlaiya", "Kalaiya", "Nijgadh", "Chandrapur", "Gaur", "Janakpur", "Dhalkebar", "Lahan", "Rajbiraj", "Siraha", "Jaleshwar", "Biratnagar", "Itahari", "Dharan", "Damak", "Birtamod", "Kakarbhitta", "Urlabari", "Inaruwa", "Dhankuta", "Nepalgunj", "Kohalpur", "Surkhet", "Birendranagar", "Dang", "Ghorahi", "Tulsipur", "Lamahi", "Bardiya", "Gulariya", "Dhangadhi", "Attariya", "Tikapur", "Mahendranagar", "Bhimdatta", "Dadeldhura", "Dipaya Silgadhi", "Jomsom", "Kagbeni", "Besisahar", "Chame", "Jiri", "Charikot", "Bidur", "Trishuli", "Syabrubesi"];
+  const PLACE_ALIASES = {
+    "ktm": "Kathmandu", "kathmandu valley": "Kathmandu", "naryangadh": "Narayangarh",
+    "narayangadh": "Narayangarh", "chitwan": "Bharatpur", "pkr": "Pokhara",
+    "btl": "Butwal", "hetauda buspark": "Hetauda Bus Park", "bhairahawa": "Siddharthanagar"
+  };
   const iso = (date) => date.toISOString().slice(0, 10);
   const futureDate = (days) => { const d = new Date(); d.setDate(d.getDate() + days); return iso(d); };
   const selectedDate = () => $("dateInput").value || futureDate(1);
@@ -42,6 +49,10 @@
     .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
   const initials = (name = "Sangai Member") => name.split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join("").toUpperCase();
+  const avatarMarkup = (name, url = "", className = "driver-avatar") => url
+    ? `<span class="${className} has-photo"><img src="${escapeHtml(url)}" alt="${escapeHtml(name || "Member")}" loading="lazy" /></span>`
+    : `<span class="${className}">${initials(name)}</span>`;
+  const canonicalPlace = (value = "") => PLACE_ALIASES[String(value).trim().toLowerCase()] || String(value).trim();
   const prettyDate = (date) => new Intl.DateTimeFormat("en-GB", { weekday: "short", day: "numeric", month: "short" }).format(new Date(`${date}T00:00:00`));
   const longDate = (date) => new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long" }).format(new Date(`${date}T00:00:00`));
   const dayLabel = (date) => date === futureDate(0) ? "today" : date === futureDate(1) ? "tomorrow" : `on ${prettyDate(date)}`;
@@ -90,7 +101,7 @@
   }
 
   function showSetupMessage() {
-    $("genericModalContent").innerHTML = `<div class="generic-modal-content"><h2>Connect Supabase first</h2><p>The frontend is ready, but it needs your Supabase Project URL, publishable key and database schema. Open README.md and complete the one-time setup.</p><div class="generic-modal-actions"><button class="primary-btn full-btn" data-close="genericModal">Understood</button></div></div>`;
+    $("genericModalContent").innerHTML = `<div class="generic-modal-content"><h2>Service temporarily unavailable</h2><p>The secure database connection is not available. Please try again later or contact Sangai support.</p><div class="generic-modal-actions"><button class="primary-btn full-btn" data-close="genericModal">Done</button></div></div>`;
     openModal("genericModal");
   }
 
@@ -163,13 +174,14 @@
   }
 
   function updateConnectionUI() {
-    $("setupBanner").classList.toggle("hidden", configured);
+    const setup = $("setupBanner");
+    setup?.classList.toggle("hidden", configured);
     if (!configured) {
-      $("systemStripText").textContent = "Phase 1 code ready · Supabase connection required";
-      $("rideList").innerHTML = `<div class="loading-state"><strong>Connect the shared database</strong>Follow README.md to turn on real accounts, shared rides, requests and messages.</div>`;
+      if (setup) setup.innerHTML = `<strong>Service temporarily unavailable.</strong><span>Please try again later.</span>`;
+      $("rideList").innerHTML = `<div class="empty-state"><strong>Service temporarily unavailable.</strong><br>Please refresh after a few minutes.</div>`;
       return;
     }
-    $("systemStripText").textContent = state.session ? "Live database connected · Signed in" : "Live database connected · Public ride search available";
+    if (setup) setup.innerHTML = "";
   }
 
   function updateAuthUI() {
@@ -228,8 +240,8 @@
     if (!configured) { updateConnectionUI(); return; }
     $("rideList").innerHTML = loadingHtml("Finding rides", "Checking the shared departure board.");
     const params = {
-      p_from: $("fromInput").value.trim() || null,
-      p_to: $("toInput").value.trim() || null,
+      p_from: canonicalPlace($("fromInput").value) || null,
+      p_to: canonicalPlace($("toInput").value) || null,
       p_date: selectedDate() || null,
       p_seats: state.passengers
     };
@@ -259,7 +271,7 @@
   function rideCard(ride) {
     const saved = state.saved.has(ride.id);
     const tags = [];
-    if (ride.verified) tags.push("✓ ID verified");
+    if (ride.verified) tags.push("✓ Verified driver");
     if (ride.womenPreferred) tags.push("Women preferred");
     if (ride.instant) tags.push("Instant approval");
     return `<article class="ride-card">
@@ -268,7 +280,7 @@
         <div class="route-block"><div class="route-time">${escapeHtml(ride.time)}</div><div class="route-track"><i class="track-dot"></i><i class="track-line"></i><i class="track-dot end"></i></div><div class="route-names"><div><strong>${escapeHtml(ride.origin)}</strong><span>${escapeHtml(ride.pickup)}</span></div><div><strong>${escapeHtml(ride.destination)}</strong><span>${escapeHtml(ride.dropoff)}</span></div></div></div>
         <div class="ride-meta"><span><svg viewBox="0 0 24 24"><path d="M4 14h16l-2-5H7l-3 5Z"/><path d="M6 14v4m12-4v4M7 18h10"/></svg>${escapeHtml(ride.vehicle)}</span><span><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 19c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>${ride.seats} seat${ride.seats === 1 ? "" : "s"} left</span><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>${escapeHtml(ride.duration)}</span><span><svg viewBox="0 0 24 24"><path d="M6 4h12v16H6V4Z"/><path d="M9 8h6"/></svg>${escapeHtml(ride.luggage)}</span></div>
       </div>
-      <div class="ride-side"><div><div class="driver-mini"><span class="driver-avatar">${initials(ride.driver)}</span><div><strong>${escapeHtml(ride.driver)}</strong><span>★ ${ride.rating ? ride.rating.toFixed(1) : "New"} · ${ride.completed} completed</span></div></div><div class="price-block"><span>CONTRIBUTION PER SEAT</span><strong>${money(ride.price)}</strong></div></div><div class="ride-actions"><button class="save-btn ${saved ? "saved" : ""}" data-save="${ride.id}" aria-label="Save ride"><svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/></svg></button><button class="view-ride-btn" data-open-ride="${ride.id}">View ride</button></div></div>
+      <div class="ride-side"><div><div class="driver-mini">${avatarMarkup(ride.driver, ride.avatar)}<div><strong>${escapeHtml(ride.driver)}</strong><span>★ ${ride.rating ? ride.rating.toFixed(1) : "New"} · ${ride.completed} completed</span></div></div><div class="price-block"><span>CONTRIBUTION PER SEAT</span><strong>${money(ride.price)}</strong></div></div><div class="ride-actions"><button class="save-btn ${saved ? "saved" : ""}" data-save="${ride.id}" aria-label="Save ride"><svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/></svg></button><button class="view-ride-btn" data-open-ride="${ride.id}">View ride</button></div></div>
     </article>`;
   }
 
@@ -307,7 +319,7 @@
       <div class="modal-route"><div class="route-time">${escapeHtml(ride.time)}</div><div class="route-track"><i class="track-dot"></i><i class="track-line"></i><i class="track-dot end"></i></div><div class="route-names"><div><strong>${escapeHtml(ride.origin)}</strong><span>${escapeHtml(ride.pickup)}</span></div><div><strong>${escapeHtml(ride.destination)}</strong><span>${escapeHtml(ride.dropoff)}</span></div></div></div>
       <div class="modal-summary"><div><span>TRAVEL TIME</span><strong>${escapeHtml(ride.duration)}</strong></div><div><span>SEATS LEFT</span><strong>${ride.seats}</strong></div><div><span>PER SEAT</span><strong>${money(ride.price)}</strong></div><div><span>TIME FLEXIBILITY</span><strong>${escapeHtml(ride.flexibility)}</strong></div></div>
       <div class="modal-grid">
-        <div><div class="driver-card"><div class="driver-row"><span class="driver-avatar">${initials(ride.driver)}</span><div><strong>${escapeHtml(ride.driver)}</strong><span>★ ${ride.rating ? ride.rating.toFixed(1) : "New"} · ${ride.completed} completed journeys</span></div></div><div class="detail-row"><span>Verified</span><strong>${verification.length ? verification.join(" · ") : "Verification pending"}</strong></div><div class="detail-row"><span>Vehicle</span><strong>${escapeHtml(ride.colour)} ${escapeHtml(ride.vehicle)}</strong></div><div class="detail-row"><span>Vehicle no.</span><strong>${escapeHtml(ride.plate)}</strong></div><div class="detail-row"><span>Stops</span><strong>${ride.stops.length ? ride.stops.map(escapeHtml).join(", ") : "Direct"}</strong></div><div class="detail-row"><span>Luggage</span><strong>${escapeHtml(ride.luggage)}</strong></div><div class="detail-row"><span>Preferences</span><strong>${ride.preferences.length ? ride.preferences.map(escapeHtml).join(", ") : "No special preference"}</strong></div></div><div class="safety-inline">Contact details and the full vehicle number are available only to accepted passengers.</div></div>
+        <div><div class="driver-card"><div class="driver-row">${avatarMarkup(ride.driver, ride.avatar)}<div><strong>${escapeHtml(ride.driver)}</strong><span>★ ${ride.rating ? ride.rating.toFixed(1) : "New"} · ${ride.completed} completed journeys</span></div></div><div class="detail-row"><span>Verified</span><strong>${verification.length ? verification.join(" · ") : "Verification pending"}</strong></div><div class="detail-row"><span>Vehicle</span><strong>${escapeHtml(ride.colour)} ${escapeHtml(ride.vehicle)}</strong></div><div class="detail-row"><span>Vehicle no.</span><strong>${escapeHtml(ride.plate)}</strong></div><div class="detail-row"><span>Stops</span><strong>${ride.stops.length ? ride.stops.map(escapeHtml).join(", ") : "Direct"}</strong></div><div class="detail-row"><span>Luggage</span><strong>${escapeHtml(ride.luggage)}</strong></div><div class="detail-row"><span>Preferences</span><strong>${ride.preferences.length ? ride.preferences.map(escapeHtml).join(", ") : "No special preference"}</strong></div></div><div class="safety-inline">Contact details and the full vehicle number are available only to accepted passengers.</div></div>
         <div class="request-box"><h3>${already ? "Request already sent" : `Request ${state.passengers} seat${state.passengers > 1 ? "s" : ""}`}</h3>${requestContent}</div>
       </div>
     </div>`;
@@ -441,19 +453,19 @@
 
   function requestCard(q) {
     const p = q.passenger || {};
-    return `<div class="request-card"><button class="driver-avatar" data-passenger="${q.id}">${initials(p.full_name)}</button><div><strong>${escapeHtml(p.full_name || "Passenger")} · ${p.average_rating ? `★ ${Number(p.average_rating).toFixed(1)}` : "New member"}</strong><span>${q.requested_seats} seat${q.requested_seats > 1 ? "s" : ""} · ${escapeHtml(q.pickup_point)} · ${escapeHtml(q.luggage)}</span><span>${escapeHtml(q.message)}</span></div><div class="request-actions">${q.status === "requested" ? `<button class="accept" data-request-action="${q.id}|accept">Accept</button><button class="message" data-request-action="${q.id}|message">Ask</button><button class="decline" data-request-action="${q.id}|decline">Decline</button>` : `<span class="status-badge ${q.status}">${statusLabel(q.status)}</span>${q.status === "accepted" ? `<button class="message" data-request-action="${q.id}|message">Message</button><button class="message" data-confirmed-details="${q.id}">Details</button>` : ""}`}</div></div>`;
+    return `<div class="request-card"><button class="driver-avatar ${p.avatar_url ? "has-photo" : ""}" data-passenger="${q.id}">${p.avatar_url ? `<img src="${escapeHtml(p.avatar_url)}" alt="${escapeHtml(p.full_name || "Passenger")}" />` : initials(p.full_name)}</button><div><strong>${escapeHtml(p.full_name || "Passenger")} · ${p.average_rating ? `★ ${Number(p.average_rating).toFixed(1)}` : "New member"}</strong><span>${q.requested_seats} seat${q.requested_seats > 1 ? "s" : ""} · ${escapeHtml(q.pickup_point)} · ${escapeHtml(q.luggage)}</span><span>${escapeHtml(q.message)}</span></div><div class="request-actions">${q.status === "requested" ? `<button class="accept" data-request-action="${q.id}|accept">Accept</button><button class="message" data-request-action="${q.id}|message">Ask</button><button class="decline" data-request-action="${q.id}|decline">Decline</button>` : `<span class="status-badge ${q.status}">${statusLabel(q.status)}</span>${q.status === "accepted" ? `<button class="message" data-request-action="${q.id}|message">Message</button><button class="message" data-confirmed-details="${q.id}">Details</button>` : ""}`}</div></div>`;
   }
 
   function driverRideCard(row) {
     const r = normalizeRide({ ...row, driver: state.profile || {} });
     const incoming = state.incomingRequests.filter(q => q.ride_id === r.id && !["declined", "cancelled"].includes(q.status));
     const nextAction = ["published", "full"].includes(r.status) ? "departing" : r.status === "departing" ? "in_progress" : r.status === "in_progress" ? "completed" : null;
-    return `<article class="journey-card"><div class="journey-card-head"><div><h3>${escapeHtml(r.origin)} → ${escapeHtml(r.destination)}</h3><p>${prettyDate(r.date)} · ${escapeHtml(r.time)} · ${escapeHtml(r.vehicle)}</p></div><span class="status-badge ${r.status}">${statusLabel(r.status)}</span></div><div class="journey-details"><div><span>PICKUP</span><strong>${escapeHtml(r.pickup)}</strong></div><div><span>EMPTY SEATS</span><strong>${r.seats}</strong></div><div><span>CONTRIBUTION</span><strong>${money(r.price)}</strong></div><div><span>REQUESTS</span><strong>${incoming.filter(x => x.status === "requested").length}</strong></div></div><div class="journey-actions">${nextAction ? `<button class="small-action primary" data-ride-status="${r.id}|${nextAction}">${nextAction === "departing" ? "Mark departing soon" : nextAction === "in_progress" ? "Start journey" : "Complete journey"}</button>` : ""}<button class="small-action" data-open-ride="${r.id}">View ride</button>${!["completed", "cancelled"].includes(r.status) ? `<button class="small-action danger" data-ride-status="${r.id}|cancelled">Cancel</button>` : ""}</div>${incoming.length ? `<div class="request-section"><h4>Passenger requests</h4>${incoming.map(requestCard).join("")}</div>` : ""}</article>`;
+    return `<article class="journey-card"><div class="journey-card-head"><div><h3>${escapeHtml(r.origin)} → ${escapeHtml(r.destination)}</h3><p>${prettyDate(r.date)} · ${escapeHtml(r.time)} · ${escapeHtml(r.vehicle)}</p></div><span class="status-badge ${r.status}">${statusLabel(r.status)}</span></div><div class="journey-details"><div><span>PICKUP</span><strong>${escapeHtml(r.pickup)}</strong></div><div><span>EMPTY SEATS</span><strong>${r.seats}</strong></div><div><span>CONTRIBUTION</span><strong>${money(r.price)}</strong></div><div><span>REQUESTS</span><strong>${incoming.filter(x => x.status === "requested").length}</strong></div></div><div class="journey-actions">${nextAction ? `<button class="small-action primary" data-ride-status="${r.id}|${nextAction}">${nextAction === "departing" ? "Mark departing soon" : nextAction === "in_progress" ? "Start journey" : "Complete journey"}</button>` : ""}<button class="small-action" data-edit-ride="${r.id}">Edit details</button><button class="small-action" data-open-ride="${r.id}">View ride</button>${!["completed", "cancelled"].includes(r.status) ? `<button class="small-action danger" data-ride-status="${r.id}|cancelled">Cancel</button>` : ""}</div>${incoming.length ? `<div class="request-section"><h4>Passenger requests</h4>${incoming.map(requestCard).join("")}</div>` : ""}</article>`;
   }
 
   function passengerJourneyCard(q) {
     const r = q.ride ? normalizeRide(q.ride) : null;
-    return `<article class="journey-card"><div class="journey-card-head"><div><h3>${r ? `${escapeHtml(r.origin)} → ${escapeHtml(r.destination)}` : "Ride unavailable"}</h3><p>${r ? `${prettyDate(r.date)} · ${escapeHtml(r.time)} · Driver: ${escapeHtml(r.driver)}` : "The ride may have been removed."}</p></div><span class="status-badge ${q.status}">${statusLabel(q.status)}</span></div><div class="journey-details"><div><span>PICKUP</span><strong>${escapeHtml(q.pickup_point)}</strong></div><div><span>SEATS</span><strong>${q.requested_seats}</strong></div><div><span>LUGGAGE</span><strong>${escapeHtml(q.luggage)}</strong></div><div><span>VEHICLE</span><strong>${r ? escapeHtml(r.vehicle) : "—"}</strong></div></div><div class="journey-actions">${q.status === "accepted" ? `<button class="small-action primary" data-request-message="${q.id}">Message driver</button><button class="small-action" data-confirmed-details="${q.id}">Confirmed details</button>` : ""}${r ? `<button class="small-action" data-open-ride="${r.id}">View ride</button>` : ""}${!["completed", "cancelled", "declined"].includes(q.status) ? `<button class="small-action danger" data-cancel-request="${q.id}">Cancel request</button>` : ""}</div></article>`;
+    return `<article class="journey-card"><div class="journey-card-head"><div><h3>${r ? `${escapeHtml(r.origin)} → ${escapeHtml(r.destination)}` : "Ride unavailable"}</h3><p>${r ? `${prettyDate(r.date)} · ${escapeHtml(r.time)} · Driver: ${escapeHtml(r.driver)}` : "The ride may have been removed."}</p></div><span class="status-badge ${q.status}">${statusLabel(q.status)}</span></div><div class="journey-details"><div><span>PICKUP</span><strong>${escapeHtml(q.pickup_point)}</strong></div><div><span>SEATS</span><strong>${q.requested_seats}</strong></div><div><span>LUGGAGE</span><strong>${escapeHtml(q.luggage)}</strong></div><div><span>VEHICLE</span><strong>${r ? escapeHtml(r.vehicle) : "—"}</strong></div></div><div class="journey-actions">${q.status === "accepted" ? `<button class="small-action primary" data-request-message="${q.id}">Message driver</button><button class="small-action" data-confirmed-details="${q.id}">Confirmed details</button>` : ""}${r ? `<button class="small-action" data-edit-ride="${r.id}">Edit details</button><button class="small-action" data-open-ride="${r.id}">View ride</button>` : ""}${!["completed", "cancelled", "declined"].includes(q.status) ? `<button class="small-action danger" data-cancel-request="${q.id}">Cancel request</button>` : ""}</div></article>`;
   }
 
   function renderJourneys() {
@@ -520,7 +532,7 @@
     if (!q) return;
     const p = q.passenger || {};
     const verified = [p.phone_verified ? "Phone" : null, p.identity_verified ? "Identity" : null].filter(Boolean);
-    $("passengerModalContent").innerHTML = `<div class="passenger-profile"><span class="profile-avatar">${initials(p.full_name)}</span><h2>${escapeHtml(p.full_name || "Passenger")}</h2><span class="verified-label">${verified.length ? `✓ ${verified.join(" · ")}` : "Verification pending"}</span><p>${escapeHtml(q.message)}</p><div class="passenger-stats"><div><strong>${p.average_rating ? Number(p.average_rating).toFixed(1) : "New"}</strong><span>RATING</span></div><div><strong>${p.completed_rides || 0}</strong><span>JOURNEYS</span></div><div><strong>${p.city || "Nepal"}</strong><span>CITY</span></div></div>${q.status === "requested" ? `<button class="primary-btn full-btn" data-request-action="${q.id}|accept">Accept request</button>` : ""}</div>`;
+    $("passengerModalContent").innerHTML = `<div class="passenger-profile">${avatarMarkup(p.full_name, p.avatar_url, "profile-avatar")}<h2>${escapeHtml(p.full_name || "Passenger")}</h2><span class="verified-label">${verified.length ? `✓ ${verified.join(" · ")}` : "Verification pending"}</span><p>${escapeHtml(q.message)}</p><div class="passenger-stats"><div><strong>${p.average_rating ? Number(p.average_rating).toFixed(1) : "New"}</strong><span>RATING</span></div><div><strong>${p.completed_rides || 0}</strong><span>JOURNEYS</span></div><div><strong>${p.city || "Nepal"}</strong><span>CITY</span></div></div>${q.status === "requested" ? `<button class="primary-btn full-btn" data-request-action="${q.id}|accept">Accept request</button>` : ""}</div>`;
     openModal("passengerModal");
   }
 
@@ -563,13 +575,13 @@
       const person = otherPerson(c) || {};
       const last = c.messages.at(-1);
       const unread = c.messages.filter(m => m.sender_id !== state.user.id && !m.read_at).length;
-      return `<button class="conversation-item ${c.id === state.activeConversation ? "active" : ""}" data-conversation="${c.id}"><span class="driver-avatar">${initials(person.full_name)}</span><span><strong>${escapeHtml(person.full_name || "Sangai member")}</strong><span>${escapeHtml(last?.body || `${c.ride.origin} → ${c.ride.destination}`)}</span></span><span><time>${last ? new Date(last.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</time>${unread ? `<i class="unread-dot"></i>` : ""}</span></button>`;
+      return `<button class="conversation-item ${c.id === state.activeConversation ? "active" : ""}" data-conversation="${c.id}">${avatarMarkup(person.full_name, person.avatar_url)}<span><strong>${escapeHtml(person.full_name || "Sangai member")}</strong><span>${escapeHtml(last?.body || `${c.ride.origin} → ${c.ride.destination}`)}</span></span><span><time>${last ? new Date(last.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</time>${unread ? `<i class="unread-dot"></i>` : ""}</span></button>`;
     }).join("");
     const c = state.conversations.find(x => x.id === state.activeConversation);
     if (!c) return;
     const person = otherPerson(c) || {};
     state.activeMessages = c.messages;
-    $("chatPanel").innerHTML = `<div class="chat-header"><div class="chat-person"><span class="driver-avatar">${initials(person.full_name)}</span><div><strong>${escapeHtml(person.full_name || "Sangai member")}</strong><span>Private conversation</span></div></div><span class="chat-ride">${escapeHtml(c.ride.origin)} → ${escapeHtml(c.ride.destination)}</span></div><div class="message-stream" id="messageStream">${c.messages.map(m => `<div class="message ${m.sender_id === state.user.id ? "mine" : ""}">${escapeHtml(m.body)}<small>${new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div>`).join("")}</div><form class="chat-compose" id="chatForm"><input id="chatInput" maxlength="500" placeholder="Write a message…" autocomplete="off"/><button aria-label="Send"><svg viewBox="0 0 24 24"><path d="m3 11 18-8-8 18-2-8-8-2Z"/><path d="m11 13 5-5"/></svg></button></form>`;
+    $("chatPanel").innerHTML = `<div class="chat-header"><div class="chat-person">${avatarMarkup(person.full_name, person.avatar_url)}<div><strong>${escapeHtml(person.full_name || "Sangai member")}</strong><span>Private conversation</span></div></div><span class="chat-ride">${escapeHtml(c.ride.origin)} → ${escapeHtml(c.ride.destination)}</span></div><div class="message-stream" id="messageStream">${c.messages.map(m => `<div class="message ${m.sender_id === state.user.id ? "mine" : ""}">${escapeHtml(m.body)}<small>${new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div>`).join("")}</div><form class="chat-compose" id="chatForm"><input id="chatInput" maxlength="500" placeholder="Write a message…" autocomplete="off"/><button aria-label="Send"><svg viewBox="0 0 24 24"><path d="m3 11 18-8-8 18-2-8-8-2Z"/><path d="m11 13 5-5"/></svg></button></form>`;
     $("chatForm").addEventListener("submit", sendMessage);
     client.rpc("mark_conversation_read", { p_conversation_id: c.id }).then(() => { c.messages.forEach(m => { if (m.sender_id !== state.user.id) m.read_at = new Date().toISOString(); }); updateMessageBadge(); });
     setTimeout(() => { const stream = $("messageStream"); if (stream) stream.scrollTop = stream.scrollHeight; }, 0);
@@ -595,7 +607,7 @@
   function verificationItems() {
     const p = state.profile || {};
     return [
-      { key: "phone_verified", title: "Phone number", subtitle: "Manual verification in the pilot", done: p.phone_verified },
+      { key: "phone_verified", title: "Phone number", subtitle: "Reviewed manually by Sangai support", done: p.phone_verified },
       { key: "identity_verified", title: "Government identity", subtitle: "Citizenship or passport", done: p.identity_verified },
       { key: "licence_verified", title: "Driving licence", subtitle: "Required for a verified driver", done: p.licence_verified },
       { key: "vehicle_verified", title: "Vehicle bluebook", subtitle: "Required for a verified vehicle", done: p.vehicle_verified }
@@ -616,16 +628,18 @@
 
   async function loadReviews() {
     if (!state.user || !$("profileReviewList")) return;
-    const { data } = await client.from("reviews").select(`*, reviewer:profiles!reviews_reviewer_id_fkey(full_name)`).eq("reviewed_user_id", state.user.id).order("created_at", { ascending: false }).limit(10);
-    $("profileReviewList").innerHTML = data?.length ? data.map(r => `<article><span class="review-avatar">${initials(r.reviewer?.full_name)}</span><div><strong>${escapeHtml(r.reviewer?.full_name || "Sangai member")}</strong><small>Completed journey</small><p>${escapeHtml(r.comment || "No written comment")}</p></div><b>★ ${r.rating}.0</b></article>`).join("") : `<div class="empty-state">Reviews appear after completed journeys.</div>`;
+    const { data } = await client.from("reviews").select(`*, reviewer:profiles!reviews_reviewer_id_fkey(full_name,avatar_url)`).eq("reviewed_user_id", state.user.id).order("created_at", { ascending: false }).limit(10);
+    $("profileReviewList").innerHTML = data?.length ? data.map(r => `<article>${avatarMarkup(r.reviewer?.full_name, r.reviewer?.avatar_url, "review-avatar")}<div><strong>${escapeHtml(r.reviewer?.full_name || "Sangai member")}</strong><small>Completed journey</small><p>${escapeHtml(r.comment || "No written comment")}</p></div><b>★ ${r.rating}.0</b></article>`).join("") : `<div class="empty-state">Reviews appear after completed journeys.</div>`;
   }
 
   function renderProfile() {
     if (!state.profile) return;
     const p = state.profile;
-    $("profileAvatar").textContent = initials(p.full_name);
+    $("profileAvatar").innerHTML = p.avatar_url ? `<img src="${escapeHtml(p.avatar_url)}" alt="${escapeHtml(p.full_name)}" />` : initials(p.full_name);
+    $("profileAvatar").classList.toggle("has-photo", Boolean(p.avatar_url));
     $("profileName").textContent = p.full_name;
     $("profileMeta").textContent = `${p.city || "Nepal"} · Member since ${new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" }).format(new Date(p.created_at))}`;
+    $("profileBio").textContent = p.bio || "Add a short introduction so people know who they are travelling with.";
     $("profileRating").textContent = p.average_rating ? Number(p.average_rating).toFixed(1) : "New";
     $("profileStats").textContent = `★ · ${p.completed_rides || 0} completed journeys`;
     $("profileVerifiedBadge").classList.toggle("hidden", !p.identity_verified);
@@ -634,6 +648,7 @@
     $("trustedContactCard").innerHTML = privateP.emergency_contact_name ? `<span class="review-avatar">${initials(privateP.emergency_contact_name)}</span><div><strong>${escapeHtml(privateP.emergency_contact_name)}</strong><small>${escapeHtml(privateP.emergency_contact_phone || "Number not added")}</small></div><span class="verified-label">Active</span>` : `<span class="review-avatar">?</span><div><strong>No trusted contact</strong><small>Add one before your first ride.</small></div>`;
     renderVerification();
     loadReviews();
+    loadVehicles();
     const overview = document.querySelector(".profile-overview-card");
     let actions = overview?.querySelector(".profile-actions");
     if (!actions && overview) {
@@ -647,22 +662,124 @@
   function openProfileEditor() {
     const p = state.profile || {};
     const pp = state.privateProfile || {};
-    $("genericModalContent").innerHTML = `<div class="generic-modal-content"><h2>Edit profile</h2><p>Use your real information so drivers and passengers know who they are meeting.</p><form class="auth-form" id="profileEditForm"><label>Full name<input name="full_name" value="${escapeHtml(p.full_name || "")}" required /></label><label>City<input name="city" list="nepalPlaces" value="${escapeHtml(p.city || "")}" /></label><label>Phone<input name="phone" value="${escapeHtml(pp.phone || "")}" placeholder="+977 98…" /></label><label>Short bio<input name="bio" value="${escapeHtml(p.bio || "")}" maxlength="180" placeholder="A short public introduction" /></label><label>Trusted contact name<input name="emergency_contact_name" value="${escapeHtml(pp.emergency_contact_name || "")}" /></label><label>Trusted contact phone<input name="emergency_contact_phone" value="${escapeHtml(pp.emergency_contact_phone || "")}" /></label><button class="primary-btn full-btn" type="submit">Save profile</button></form></div>`;
+    $("genericModalContent").innerHTML = `<div class="generic-modal-content"><h2>Edit profile</h2><p>Use your real information so drivers and passengers know who they are meeting.</p><form class="auth-form" id="profileEditForm"><label>Profile photo<input name="avatar_file" type="file" accept="image/jpeg,image/png,image/webp" /><small class="field-help">JPG, PNG or WebP · maximum 2 MB</small></label><label>Full name<input name="full_name" value="${escapeHtml(p.full_name || "")}" required /></label><label>City<input name="city" list="nepalPlaces" value="${escapeHtml(p.city || "")}" /></label><label>Phone<input name="phone" value="${escapeHtml(pp.phone || "")}" placeholder="+977 98…" /></label><label>Short bio<input name="bio" value="${escapeHtml(p.bio || "")}" maxlength="180" placeholder="A short public introduction" /></label><label>Trusted contact name<input name="emergency_contact_name" value="${escapeHtml(pp.emergency_contact_name || "")}" /></label><label>Trusted contact phone<input name="emergency_contact_phone" value="${escapeHtml(pp.emergency_contact_phone || "")}" /></label><button class="primary-btn full-btn" type="submit">Save profile</button></form></div>`;
     openModal("genericModal");
     $("profileEditForm").addEventListener("submit", saveProfile);
   }
 
   async function saveProfile(event) {
     event.preventDefault();
-    const d = Object.fromEntries(new FormData(event.currentTarget).entries());
+    const formData = new FormData(event.currentTarget);
+    const d = Object.fromEntries(formData.entries());
+    let avatarUrl = state.profile?.avatar_url || null;
+    const avatarFile = formData.get("avatar_file");
+    if (avatarFile && avatarFile.size) {
+      if (avatarFile.size > 2 * 1024 * 1024) { toast("Profile photo must be under 2 MB."); return; }
+      const ext = (avatarFile.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `${state.user.id}/avatar.${ext}`;
+      const { error: uploadError } = await client.storage.from("avatars").upload(path, avatarFile, { upsert: true, contentType: avatarFile.type });
+      if (uploadError) { toast(uploadError.message); return; }
+      avatarUrl = client.storage.from("avatars").getPublicUrl(path).data.publicUrl + `?v=${Date.now()}`;
+    }
     const [{ error: pError }, { error: ppError }] = await Promise.all([
-      client.from("profiles").update({ full_name: d.full_name.trim(), city: d.city.trim() || null, bio: d.bio.trim() || null }).eq("id", state.user.id),
+      client.from("profiles").update({ full_name: d.full_name.trim(), city: d.city.trim() || null, bio: d.bio.trim() || null, avatar_url: avatarUrl }).eq("id", state.user.id),
       client.from("private_profiles").update({ phone: d.phone.trim() || null, emergency_contact_name: d.emergency_contact_name.trim() || null, emergency_contact_phone: d.emergency_contact_phone.trim() || null }).eq("user_id", state.user.id)
     ]);
     if (pError || ppError) { toast((pError || ppError).message); return; }
     closeModal("genericModal");
     toast("Profile updated.");
     await loadProfile();
+  }
+
+
+  async function loadVehicles() {
+    if (!state.user || !$("profileVehicleList")) return;
+    const { data, error } = await client.from("vehicles").select("*").eq("owner_id", state.user.id).order("created_at", { ascending: false });
+    if (error) {
+      $("profileVehicleList").innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
+      return;
+    }
+    state.vehicles = data || [];
+    $("profileVehicleList").innerHTML = state.vehicles.length ? state.vehicles.map(v => `
+      <article class="profile-vehicle">
+        <span class="vehicle-icon"><svg viewBox="0 0 24 24"><path d="M4 14h16l-2-5H7l-3 5Z"/><path d="M6 14v4m12-4v4M7 18h10"/></svg></span>
+        <div><strong>${escapeHtml(v.colour)} ${escapeHtml(v.model)}</strong><span>${escapeHtml(maskPlate(v.plate_number))} · ${v.seats} seats</span></div>
+        <span class="${v.is_verified ? "verified-label" : "status-badge requested"}">${v.is_verified ? "Verified" : "Not verified"}</span>
+      </article>`).join("") : `<div class="empty-state">No vehicle added yet.</div>`;
+  }
+
+  function openPreferencesEditor() {
+    const current = new Set(state.profile?.travel_preferences || []);
+    const options = ["No smoking", "Music is okay", "Quiet ride", "Conversation is okay", "Pets are okay"];
+    $("genericModalContent").innerHTML = `<div class="generic-modal-content"><h2>Travel preferences</h2><p>These appear on your public profile. Individual rides can still have different rules.</p><form id="preferencesForm" class="preference-editor">${options.map(x => `<label><input type="checkbox" name="preference" value="${escapeHtml(x)}" ${current.has(x) ? "checked" : ""}/><span>${escapeHtml(x)}</span></label>`).join("")}<button class="primary-btn full-btn" type="submit">Save preferences</button></form></div>`;
+    openModal("genericModal");
+    $("preferencesForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const values = [...new FormData(e.currentTarget).getAll("preference")];
+      const { error } = await client.from("profiles").update({ travel_preferences: values }).eq("id", state.user.id);
+      if (error) { toast(error.message); return; }
+      closeModal("genericModal");
+      toast("Preferences updated.");
+      await loadProfile();
+    });
+  }
+
+  function openReportForm() {
+    $("genericModalContent").innerHTML = `<div class="generic-modal-content"><h2>Report a safety issue</h2><p>Use this for behaviour, identity, vehicle or journey concerns. For an immediate emergency, contact local emergency services first.</p><form id="reportForm" class="auth-form"><label>Category<select name="category" required><option value="safety">Safety concern</option><option value="identity">Identity mismatch</option><option value="vehicle">Vehicle mismatch</option><option value="harassment">Harassment or inappropriate behaviour</option><option value="payment">Payment disagreement</option><option value="other">Other</option></select></label><label>Ride ID or user ID <span class="optional">(optional)</span><input name="reference" placeholder="Paste the ID if available" /></label><label>What happened?<textarea name="details" minlength="10" maxlength="1000" required placeholder="Describe what happened, when and where."></textarea></label><button class="primary-btn full-btn" type="submit">Submit report</button></form></div>`;
+    openModal("genericModal");
+    $("reportForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(e.currentTarget).entries());
+      const payload = { reported_by: state.user.id, category: d.category, details: d.details.trim(), reference_text: d.reference.trim() || null };
+      const { error } = await client.from("reports").insert(payload);
+      if (error) { toast(error.message); return; }
+      closeModal("genericModal");
+      toast("Report submitted. Keep any relevant screenshots or messages.");
+    });
+  }
+
+  function openEditRide(id) {
+    const row = state.driverRides.find(r => r.id === id);
+    if (!row) return;
+    if (!["published", "full"].includes(row.status)) { toast("Only upcoming published rides can be edited."); return; }
+    $("genericModalContent").innerHTML = `<div class="generic-modal-content"><h2>Edit ride details</h2><p>Passengers with active requests will be notified when schedule or pickup details change.</p><form id="editRideForm" class="auth-form"><label>Pickup point<input name="pickup" value="${escapeHtml(row.pickup_point)}" required /></label><label>Drop-off point<input name="dropoff" value="${escapeHtml(row.dropoff_point)}" required /></label><label>Departure date<input name="date" type="date" min="${futureDate(0)}" value="${escapeHtml(row.departure_date)}" required /></label><label>Departure time<input name="time" type="time" value="${timeShort(row.departure_time)}" required /></label><label>Approx. duration<input name="duration" value="${escapeHtml(durationText(row.duration_minutes))}" required /></label><label>Contribution per seat<input name="price" type="number" min="0" value="${Number(row.price_per_seat)}" required /></label><label>Luggage<select name="luggage"><option ${row.luggage === "Small bag only" ? "selected" : ""}>Small bag only</option><option ${row.luggage === "One medium bag" ? "selected" : ""}>One medium bag</option><option ${row.luggage === "Large luggage allowed" ? "selected" : ""}>Large luggage allowed</option></select></label><label>Stops on the way<input name="stops" value="${escapeHtml((row.stops || []).join(", "))}" /></label><button class="primary-btn full-btn" type="submit">Save ride changes</button></form></div>`;
+    openModal("genericModal");
+    $("editRideForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const d = Object.fromEntries(new FormData(e.currentTarget).entries());
+      const { error } = await client.rpc("update_ride_details", {
+        p_ride_id: id,
+        p_pickup_point: d.pickup.trim(),
+        p_dropoff_point: d.dropoff.trim(),
+        p_departure_date: d.date,
+        p_departure_time: d.time,
+        p_duration_minutes: parseDuration(d.duration),
+        p_price_per_seat: Number(d.price),
+        p_luggage: d.luggage,
+        p_stops: d.stops ? d.stops.split(",").map(x => x.trim()).filter(Boolean) : []
+      });
+      if (error) { toast(error.message); return; }
+      closeModal("genericModal");
+      toast("Ride details updated.");
+      await Promise.all([loadJourneys(), searchRides()]);
+    });
+  }
+
+  function showLegalPage(type) {
+    const pages = {
+      about: ["About Sangai", "Sangai helps people share empty seats on private intercity journeys they were already planning to make. It is a matching platform, not an on-demand taxi service."],
+      privacy: ["Privacy", "Public profiles show only information needed to build trust. Phone numbers and full vehicle details remain private until a seat request is accepted. Account and journey data is stored in Supabase under database access policies."],
+      terms: ["Community terms", "Publish only genuine journeys you already intend to make. Use accurate identity, vehicle, pickup, timing and contribution information. Do not use Sangai for harassment, unlawful transport, misleading fares or unsafe activity."]
+    };
+    const [title, body] = pages[type] || pages.about;
+    $("genericModalContent").innerHTML = `<div class="generic-modal-content legal-copy"><h2>${escapeHtml(title)}</h2><p>${escapeHtml(body)}</p><p>Sangai is currently suitable for a controlled pilot. Legal, insurance and operating requirements must be confirmed before broad commercial use.</p><button class="primary-btn full-btn" data-close="genericModal">Done</button></div>`;
+    openModal("genericModal");
+  }
+
+  function populatePlaces() {
+    const list = $("nepalPlaces");
+    if (!list) return;
+    list.innerHTML = NEPAL_PLACES.map(place => `<option value="${escapeHtml(place)}"></option>`).join("");
   }
 
   function genericInfo(title, body, action = "Done") {
@@ -777,7 +894,7 @@
     all("[data-view]").forEach(n => n.addEventListener("click", e => { e.preventDefault(); closeModal("rideModal"); setView(n.dataset.view); }));
     all("[data-close]").forEach(n => n.addEventListener("click", () => closeModal(n.dataset.close)));
     all(".modal-backdrop").forEach(n => n.addEventListener("click", e => { if (e.target === n) closeModal(n.id); }));
-    $("closePrototypeStrip").addEventListener("click", e => e.currentTarget.parentElement.remove());
+    $("closePrototypeStrip")?.addEventListener("click", e => e.currentTarget.parentElement.remove());
     $("authButton").addEventListener("click", () => openAuth("login"));
     $("swapRoute").addEventListener("click", () => { const x = $("fromInput").value; $("fromInput").value = $("toInput").value; $("toInput").value = x; searchRides(); });
     $("searchRides").addEventListener("click", () => searchRides({ scroll: true }));
@@ -794,11 +911,11 @@
     all("[data-auth-tab]").forEach(btn => btn.addEventListener("click", () => openAuth(btn.dataset.authTab)));
     $("forgotPasswordBtn").addEventListener("click", forgotPassword);
     $("editProfileBtn").addEventListener("click", openProfileEditor);
-    $("editPreferencesBtn").addEventListener("click", () => genericInfo("Ride preferences", "Driver and passenger preferences are selected per journey in Phase 1. Profile-level preference editing can be added after pilot feedback."));
+    $("editPreferencesBtn").addEventListener("click", openPreferencesEditor);
     $("changeContactBtn").addEventListener("click", openProfileEditor);
     $("shareJourneyBtn").addEventListener("click", () => genericInfo("Share active journey", "Once a seat is accepted, Sangai keeps the route, driver and vehicle details together so you can share them with a trusted contact."));
-    $("reportIssueBtn").addEventListener("click", () => genericInfo("Safety reporting", "Phase 1 stores journey records and private messages. A dedicated incident-report workflow is planned for Phase 2."));
-    $("languageBtn").addEventListener("click", () => toast("A full Nepali translation will be added after the pilot wording is tested."));
+    $("reportIssueBtn").addEventListener("click", openReportForm);
+    $("languageBtn")?.addEventListener("click", () => toast("Language selection is not enabled yet."));
 
     document.addEventListener("click", async e => {
       const close = e.target.closest("[data-close]"); if (close) { closeModal(close.dataset.close); return; }
@@ -810,6 +927,8 @@
       const viewRequest = e.target.closest("[data-view-request], [data-success-journey]"); if (viewRequest) { closeModal("requestSuccessModal"); closeModal("rideModal"); state.journeyTab = "passenger"; setView("journeys"); return; }
       const action = e.target.closest("[data-request-action]"); if (action) { const [id, type] = action.dataset.requestAction.split("|"); closeModal("passengerModal"); respondRequest(id, type); return; }
       const passenger = e.target.closest("[data-passenger]"); if (passenger) { openPassenger(passenger.dataset.passenger); return; }
+      const editRide = e.target.closest("[data-edit-ride]"); if (editRide) { openEditRide(editRide.dataset.editRide); return; }
+      const legal = e.target.closest("[data-legal]"); if (legal) { showLegalPage(legal.dataset.legal); return; }
       const rideStatus = e.target.closest("[data-ride-status]"); if (rideStatus) { const [id, status] = rideStatus.dataset.rideStatus.split("|"); changeRideStatus(id, status); return; }
       const cancel = e.target.closest("[data-cancel-request]"); if (cancel) { cancelSeatRequest(cancel.dataset.cancelRequest); return; }
       const confirmed = e.target.closest("[data-confirmed-details]"); if (confirmed) { showConfirmedDetails(confirmed.dataset.confirmedDetails); return; }
@@ -819,6 +938,10 @@
   }
 
   async function init() {
+    populatePlaces();
+    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+      navigator.serviceWorker.register("/service-worker.js").catch(() => {});
+    }
     $("dateInput").min = futureDate(0);
     $("dateInput").value = futureDate(1);
     setOfferDefaults();
@@ -837,6 +960,6 @@
 
   init().catch(error => {
     console.error(error);
-    toast("Sangai could not finish loading. Check the browser console and Supabase setup.");
+    toast("Sangai could not finish loading. Please refresh or contact support.");
   });
 })();

@@ -1,0 +1,17 @@
+{
+  "name": "Sangai — Intercity Seat Sharing",
+  "short_name": "Sangai",
+  "description": "Find a seat in a car already going your way.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f7f3",
+  "theme_color": "#123c31",
+  "icons": [
+    {
+      "src": "/assets/sangai-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
