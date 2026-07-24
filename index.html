@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Sangai helps people in Nepal share empty seats on intercity journeys already happening." />
+  <meta name="theme-color" content="#0f3d31" />
+  <title>Sangai — Find a seat. Share the road.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="prototype-strip">
+    <span class="prototype-dot"></span>
+    <span id="systemStripText">Phase 1 live product · Connect Supabase to begin</span>
+    <button id="closePrototypeStrip" aria-label="Close prototype note">×</button>
+  </div>
+
+  <header class="app-header">
+    <div class="header-inner">
+      <button class="brand" data-view="home" aria-label="Sangai home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><path d="M7 29h34l-5-10H13L7 29Z"/><path d="M11 29v4m26-4v4M14 33h20"/><circle cx="15" cy="34" r="4"/><circle cx="33" cy="34" r="4"/></svg>
+        </span>
+        <span class="brand-copy"><strong>Sangai</strong><small>सँगै जाऔँ</small></span>
+      </button>
+
+      <nav class="desktop-nav" aria-label="Primary navigation">
+        <button class="nav-link active" data-view="home">Find a seat</button>
+        <button class="nav-link" data-view="offer">Offer seats</button>
+        <button class="nav-link" data-view="journeys">My journeys</button>
+        <button class="nav-link" data-view="inbox">Messages <span class="nav-badge" id="messageBadge">2</span></button>
+      </nav>
+
+      <div class="header-actions">
+        <button class="language-btn" id="languageBtn">EN</button>
+        <button class="notification-btn" data-view="journeys" aria-label="Notifications">
+          <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg>
+          <span>2</span>
+        </button>
+        <button class="auth-btn" id="authButton">Log in</button><button class="avatar-btn hidden" id="avatarBtn" data-view="profile">UP</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="setup-banner hidden" id="setupBanner"><strong>One-time setup required.</strong><span>Add your Supabase Project URL and publishable key in <code>config.js</code>, then run <code>supabase/schema.sql</code>.</span></div>
+
+  <main>
+    <section id="homeView" class="view">
+      <div class="app-shell home-shell">
+        <section class="welcome-row">
+          <div>
+            <p class="eyebrow">INTERCITY SEAT SHARING</p>
+            <h1>Where are you going?</h1>
+            <p>Find a verified driver already travelling on your route.</p>
+          </div>
+          <button class="driver-shortcut" data-view="offer">
+            <span class="shortcut-icon"><svg viewBox="0 0 24 24"><path d="M4 14h16l-2-5H7l-3 5Z"/><path d="M6 14v4m12-4v4M7 18h10"/></svg></span>
+            <span><strong>Driving somewhere?</strong><small>Offer your empty seats</small></span>
+            <b>→</b>
+          </button>
+        </section>
+
+        <section class="search-panel" aria-label="Search rides">
+          <div class="route-search-row">
+            <label class="location-field">
+              <span class="field-label">FROM</span>
+              <span class="location-dot start"></span>
+              <input id="fromInput" list="nepalPlaces" value="Kathmandu" placeholder="Starting place" autocomplete="off" />
+              <small>City, area or pickup landmark</small>
+            </label>
+
+            <button class="swap-route" id="swapRoute" aria-label="Swap route">
+              <svg viewBox="0 0 24 24"><path d="M7 7h11l-3-3m3 3-3 3M17 17H6l3 3m-3-3 3-3"/></svg>
+            </button>
+
+            <label class="location-field">
+              <span class="field-label">TO</span>
+              <span class="location-dot end"></span>
+              <input id="toInput" list="nepalPlaces" value="Hetauda" placeholder="Destination" autocomplete="off" />
+              <small>City, area or drop-off landmark</small>
+            </label>
+          </div>
+
+          <div class="search-bottom-row">
+            <div class="date-choice">
+              <span class="field-label">WHEN</span>
+              <div class="date-chips" id="dateChips">
+                <button class="date-chip" data-date="today">Today <small>आज</small></button>
+                <button class="date-chip active" data-date="tomorrow">Tomorrow <small>भोलि</small></button>
+                <label class="date-chip picker-chip"><span>Choose date</span><input id="dateInput" type="date" aria-label="Choose date" /></label>
+              </div>
+            </div>
+
+            <div class="passenger-choice">
+              <span class="field-label">PASSENGERS</span>
+              <div class="seat-stepper"><button id="seatMinus" aria-label="Decrease passengers">−</button><strong id="seatCount">1</strong><button id="seatPlus" aria-label="Increase passengers">+</button></div>
+            </div>
+
+            <button class="primary-btn search-btn" id="searchRides"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 4.5 4.5"/></svg>Find rides</button>
+          </div>
+
+          <div class="popular-row">
+            <span>Popular routes</span>
+            <button data-route="Kathmandu|Hetauda">Kathmandu–Hetauda</button>
+            <button data-route="Kathmandu|Pokhara">Kathmandu–Pokhara</button>
+            <button data-route="Kathmandu|Bharatpur">Kathmandu–Bharatpur</button>
+            <button data-route="Pokhara|Baglung">Pokhara–Baglung</button>
+          </div>
+        </section>
+
+        <section class="trust-summary">
+          <article><span class="trust-icon"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 2.8 8.3 7 10 4.2-1.7 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-5"/></svg></span><div><strong>Verified profiles</strong><span>Phone, ID, licence and vehicle checks</span></div></article>
+          <article><span class="trust-icon"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5V5Z"/><path d="M8 9h8M8 13h5"/></svg></span><div><strong>Clear ride details</strong><span>Exact pickup, timing, price and luggage</span></div></article>
+          <article><span class="trust-icon"><svg viewBox="0 0 24 24"><path d="M4 12c3-5 13-5 16 0-3 5-13 5-16 0Z"/><circle cx="12" cy="12" r="2"/></svg></span><div><strong>Private by default</strong><span>Contact details after acceptance only</span></div></article>
+        </section>
+
+        <section class="result-section" id="results">
+          <div class="result-heading">
+            <div><p class="route-summary" id="routeSummary">Kathmandu → Hetauda</p><h2 id="resultTitle">Rides for tomorrow</h2></div>
+            <div class="result-tools"><span id="resultCount">0 rides</span><select id="sortSelect" aria-label="Sort rides"><option value="soonest">Earliest departure</option><option value="price">Lowest price</option><option value="rating">Top rated</option></select></div>
+          </div>
+
+          <div class="filter-row" id="filterRow">
+            <button class="filter-chip active" data-filter="all">All rides</button>
+            <button class="filter-chip" data-filter="verified">ID verified</button>
+            <button class="filter-chip" data-filter="women">Women preferred</button>
+            <button class="filter-chip" data-filter="instant">Instant approval</button>
+          </div>
+
+          <div class="results-layout">
+            <div class="ride-list" id="rideList"></div>
+            <aside class="help-column">
+              <article class="safety-card">
+                <div class="card-title-row"><span class="shield-badge"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 2.8 8.3 7 10 4.2-1.7 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-5"/></svg></span><div><strong>Safer by design</strong><span>Simple checks before every ride.</span></div></div>
+                <ul><li>Driver identity and licence status</li><li>Vehicle number stored privately</li><li>Journey sharing and emergency contact</li></ul>
+                <button class="text-btn" data-view="safety">See safety centre →</button>
+              </article>
+
+              <article class="pilot-card"><span>PILOT ROUTE</span><h3>Kathmandu ↔ Hetauda</h3><p>Concentrating rides on one corridor makes it easier to find a real match.</p><button class="text-btn light" data-route="Hetauda|Kathmandu">Search return rides →</button></article>
+            </aside>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section id="offerView" class="view hidden page-view">
+      <div class="app-shell narrow-shell">
+        <div class="page-heading">
+          <div><p class="eyebrow">FOR DRIVERS</p><h1>Offer empty seats</h1><p>Publish a journey you are already planning to make. Most drivers finish this in under one minute.</p></div>
+          <div class="plain-note"><strong>Cost sharing, not a taxi fare.</strong><span>Keep the contribution reasonable for fuel and road expenses.</span></div>
+        </div>
+
+        <div class="form-progress"><span class="active">1 Route</span><i></i><span class="active">2 Seats</span><i></i><span class="active">3 Vehicle</span></div>
+
+        <form id="offerForm" class="offer-form">
+          <section class="form-card">
+            <div class="form-card-title"><span>1</span><div><h2>Route and time</h2><p>Tell passengers exactly where and when.</p></div></div>
+            <div class="form-grid">
+              <label>From<input name="origin" list="nepalPlaces" value="Kathmandu" required /></label>
+              <label>To<input name="destination" list="nepalPlaces" value="Hetauda" required /></label>
+              <label>Pickup landmark<input name="pickup" value="Kalanki Chowk" required /></label>
+              <label>Drop-off landmark<input name="dropoff" value="Hetauda Bus Park" required /></label>
+              <label>Departure date<input name="date" type="date" required /></label>
+              <label>Departure time<input name="time" type="time" value="08:00" required /></label>
+              <label class="full">Stops on the way <small>(optional)</small><input name="stops" value="Naubise, Daman" /></label>
+            </div>
+          </section>
+
+          <section class="form-card">
+            <div class="form-card-title"><span>2</span><div><h2>Seats and contribution</h2><p>Set clear expectations before requests arrive.</p></div></div>
+            <div class="form-grid">
+              <label>Empty seats<select name="seats"><option>1</option><option>2</option><option selected>3</option><option>4</option></select></label>
+              <label>Contribution per seat (Rs.)<input name="price" type="number" min="0" value="700" required /></label>
+              <label>Approx. travel time<input name="duration" value="3 hr 30 min" required /></label>
+              <label>Departure flexibility<select name="flexibility"><option>Exact time</option><option selected>± 15 minutes</option><option>± 30 minutes</option><option>± 60 minutes</option></select></label>
+              <label>Luggage<select name="luggage"><option>Small bag only</option><option>One medium bag</option><option>Large luggage allowed</option></select></label>
+              <label>Request approval<select name="approval"><option>Review each request</option><option>Instant approval</option></select></label>
+            </div>
+          </section>
+
+          <section class="form-card">
+            <div class="form-card-title"><span>3</span><div><h2>Vehicle and preferences</h2><p>Help passengers understand the ride.</p></div></div>
+            <div class="form-grid">
+              <label>Vehicle model<input name="vehicle" value="Hyundai Creta" required /></label>
+              <label>Colour<input name="colour" value="White" required /></label>
+              <label>Vehicle number<input name="plate" value="Ba 12 Cha 1234" required /></label>
+              <label>Contact after acceptance<select name="contact"><option>Chat first</option><option>Allow phone call</option></select></label>
+            </div>
+            <div class="preference-grid">
+              <label><input type="checkbox" name="noSmoking" checked /> No smoking</label>
+              <label><input type="checkbox" name="music" checked /> Music is okay</label>
+              <label><input type="checkbox" name="womenPreferred" /> Women preferred</label>
+              <label><input type="checkbox" name="pets" /> Pets allowed</label>
+            </div>
+          </section>
+
+          <div class="publish-bar"><div><strong>Ready to publish?</strong><span>You can edit, fill or cancel this ride later.</span></div><button class="primary-btn" type="submit">Publish ride</button></div>
+        </form>
+      </div>
+    </section>
+
+    <section id="journeysView" class="view hidden page-view">
+      <div class="app-shell">
+        <div class="page-heading compact-heading">
+          <div><p class="eyebrow">YOUR ACTIVITY</p><h1>My journeys</h1><p>Manage rides, requests and completed journeys.</p></div>
+          <button class="primary-btn" data-view="offer">+ Offer seats</button>
+        </div>
+
+        <div class="journey-tabs" id="journeyTabs">
+          <button class="active" data-journey-tab="driver">As driver <span id="driverRideCount">1</span></button>
+          <button data-journey-tab="passenger">As passenger <span id="passengerRequestCount">1</span></button>
+          <button data-journey-tab="history">History <span id="historyCount">2</span></button>
+        </div>
+
+        <div id="journeyPanel" class="journey-panel"></div>
+      </div>
+    </section>
+
+    <section id="inboxView" class="view hidden page-view">
+      <div class="app-shell">
+        <div class="page-heading compact-heading"><div><p class="eyebrow">PRIVATE MESSAGES</p><h1>Messages</h1><p>Chat after a request is accepted or when more detail is needed.</p></div></div>
+        <div class="inbox-layout">
+          <aside class="conversation-list" id="conversationList"></aside>
+          <section class="chat-panel" id="chatPanel"></section>
+        </div>
+      </div>
+    </section>
+
+    <section id="profileView" class="view hidden page-view">
+      <div class="app-shell profile-shell">
+        <div class="profile-overview-card">
+          <div class="profile-main">
+            <span class="profile-avatar" id="profileAvatar">SM</span>
+            <div><div class="profile-name-row"><h1 id="profileName">Sangai member</h1><span class="verified-label hidden" id="profileVerifiedBadge">✓ ID verified</span></div><p id="profileMeta">Complete your profile to build trust.</p><div class="profile-rating"><strong id="profileRating">—</strong><span id="profileStats">No completed journeys yet</span></div></div>
+          </div>
+          <button class="secondary-outline-btn" id="editProfileBtn">Edit profile</button>
+        </div>
+
+        <div class="profile-grid">
+          <section class="content-card">
+            <div class="content-card-head"><div><h2>Trust and verification</h2><p>Complete checks to increase acceptance.</p></div><strong id="verificationPercent">75%</strong></div>
+            <div class="verification-progress"><span id="verificationBar"></span></div>
+            <div class="verification-list" id="verificationList"></div>
+            <button class="primary-btn full-btn" data-view="safety">Complete verification</button>
+          </section>
+
+          <section class="content-card">
+            <div class="content-card-head"><div><h2>Travel preferences</h2><p>Shown to drivers and passengers.</p></div></div>
+            <div class="preference-list" id="profilePreferences"><span>No smoking</span><span>Music is okay</span></div>
+            <button class="secondary-outline-btn full-btn" id="editPreferencesBtn">Edit preferences</button>
+          </section>
+
+          <section class="content-card wide-card">
+            <div class="content-card-head"><div><h2>Recent reviews</h2><p>Reviews appear after completed journeys.</p></div></div>
+            <div class="review-list" id="profileReviewList"><div class="empty-state">Reviews appear after completed journeys.</div></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section id="safetyView" class="view hidden page-view">
+      <div class="app-shell narrow-shell">
+        <div class="page-heading">
+          <div><p class="eyebrow">TRUST & SAFETY</p><h1>Safety centre</h1><p>Manage verification, trusted contacts and journey sharing from one place.</p></div>
+          <button class="secondary-outline-btn" data-view="profile">← Back to profile</button>
+        </div>
+
+        <div class="safety-grid">
+          <section class="content-card wide-card">
+            <div class="content-card-head"><div><h2>Verification checklist</h2><p>Your documents are never shown publicly.</p></div><strong id="safetyPercent">75%</strong></div>
+            <div class="verification-list large" id="safetyVerificationList"></div>
+          </section>
+
+          <section class="content-card">
+            <div class="content-card-head"><div><h2>Trusted contact</h2><p>Receive journey details when you share a ride.</p></div></div>
+            <div class="contact-card" id="trustedContactCard"><span class="review-avatar">?</span><div><strong>No trusted contact</strong><small>Add one before your first ride.</small></div></div>
+            <button class="secondary-outline-btn full-btn" id="changeContactBtn">Change contact</button>
+          </section>
+
+          <section class="content-card">
+            <div class="content-card-head"><div><h2>Journey sharing</h2><p>Send route, driver and vehicle details.</p></div></div>
+            <button class="primary-btn full-btn" id="shareJourneyBtn">Share active journey</button>
+            <button class="danger-text-btn" id="reportIssueBtn">Report a safety issue</button>
+          </section>
+
+          <section class="content-card wide-card safety-principles">
+            <div class="content-card-head"><div><h2>Before you travel</h2><p>Simple checks that make a real difference.</p></div></div>
+            <div class="principle-grid"><article><b>1</b><strong>Confirm the vehicle</strong><span>Match the model, colour and number before entering.</span></article><article><b>2</b><strong>Share the journey</strong><span>Send details to someone you trust.</span></article><article><b>3</b><strong>Keep payments clear</strong><span>Agree on the contribution before departure.</span></article><article><b>4</b><strong>Trust your judgement</strong><span>Cancel if the driver, passenger or vehicle does not match.</span></article></div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <datalist id="nepalPlaces">
+    <option value="Kathmandu"></option><option value="Kalanki"></option><option value="Koteshwor"></option><option value="Satungal"></option><option value="Bhaktapur"></option><option value="Lalitpur"></option><option value="Hetauda"></option><option value="Hetauda Bus Park"></option><option value="Bharatpur"></option><option value="Narayangarh"></option><option value="Pokhara"></option><option value="Lakeside"></option><option value="Butwal"></option><option value="Dhulikhel"></option><option value="Dharan"></option><option value="Biratnagar"></option><option value="Janakpur"></option><option value="Baglung"></option><option value="Daman"></option><option value="Naubise"></option><option value="Mugling"></option>
+  </datalist>
+
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <button class="active" data-view="home"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 4.5 4.5"/></svg><span>Find</span></button>
+    <button data-view="offer"><svg viewBox="0 0 24 24"><path d="M4 14h16l-2-5H7l-3 5Z"/><path d="M6 14v4m12-4v4M7 18h10"/></svg><span>Offer</span></button>
+    <button data-view="journeys"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5V4Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><span>Journeys</span></button>
+    <button data-view="inbox"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 3V5Z"/><path d="M8 9h8M8 13h5"/></svg><span>Messages</span></button>
+    <button data-view="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg><span>Profile</span></button>
+  </nav>
+
+  <div class="modal-backdrop hidden" id="rideModal" role="dialog" aria-modal="true"><article class="ride-modal"><button class="modal-close" data-close="rideModal">×</button><div id="rideModalContent"></div></article></div>
+  <div class="modal-backdrop hidden" id="requestSuccessModal" role="dialog" aria-modal="true"><article class="success-modal"><span class="success-icon">✓</span><h2>Seat request sent</h2><p>The driver can review your profile and message. Contact details remain private until acceptance.</p><div class="success-actions"><button class="secondary-outline-btn" data-close="requestSuccessModal">Keep browsing</button><button class="primary-btn" data-success-journey>View request</button></div></article></div>
+  <div class="modal-backdrop hidden" id="passengerModal" role="dialog" aria-modal="true"><article class="small-modal"><button class="modal-close" data-close="passengerModal">×</button><div id="passengerModalContent"></div></article></div>
+  <div class="modal-backdrop hidden" id="genericModal" role="dialog" aria-modal="true"><article class="small-modal"><button class="modal-close" data-close="genericModal">×</button><div id="genericModalContent"></div></article></div>
+
+  <div class="modal-backdrop hidden" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <article class="small-modal auth-modal">
+      <button class="modal-close" data-close="authModal">×</button>
+      <div class="auth-logo"><span class="brand-mark"><svg viewBox="0 0 48 48"><path d="M7 29h34l-5-10H13L7 29Z"/><path d="M11 29v4m26-4v4M14 33h20"/><circle cx="15" cy="34" r="4"/><circle cx="33" cy="34" r="4"/></svg></span><div><strong>Sangai</strong><span>Real accounts. Shared journeys.</span></div></div>
+      <div class="auth-tabs"><button class="active" data-auth-tab="login">Log in</button><button data-auth-tab="signup">Create account</button></div>
+      <h2 id="authTitle">Welcome back</h2>
+      <p id="authSubtitle">Log in to offer seats, request rides and message privately.</p>
+      <form id="authForm" class="auth-form">
+        <label class="signup-only hidden">Full name<input id="authFullName" maxlength="80" placeholder="Your real name" /></label>
+        <label class="signup-only hidden">City<input id="authCity" list="nepalPlaces" placeholder="Kathmandu" /></label>
+        <label>Email address<input id="authEmail" type="email" required autocomplete="email" placeholder="you@example.com" /></label>
+        <label>Password<input id="authPassword" type="password" minlength="6" required autocomplete="current-password" placeholder="At least 6 characters" /></label>
+        <button class="primary-btn full-btn" id="authSubmit" type="submit">Log in</button>
+      </form>
+      <button class="forgot-btn" id="forgotPasswordBtn">Forgot password?</button>
+      <p class="auth-message" id="authMessage"></p>
+      <p class="auth-privacy">Your email is used for account access and is not displayed publicly.</p>
+    </article>
+  </div>
+
+  <div class="toast-area" id="toastArea" aria-live="polite"></div>
+
+  <footer><div><strong>Sangai</strong><span>Find a seat. Share the road.</span></div><small>Phase 1 marketplace foundation · Nepal · 2026</small></footer>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
