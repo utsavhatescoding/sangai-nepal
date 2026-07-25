@@ -369,7 +369,7 @@
   </nav>
 
   <div class="modal-backdrop hidden" id="rideModal" role="dialog" aria-modal="true"><article class="ride-modal"><button class="modal-close" data-close="rideModal">×</button><div id="rideModalContent"></div></article></div>
-  <div class="modal-backdrop hidden" id="requestSuccessModal" role="dialog" aria-modal="true"><article class="success-modal"><span class="success-icon">✓</span><h2>Seat request sent</h2><p>The driver can review your profile and message. Contact details remain private until acceptance.</p><div class="success-actions"><button class="secondary-outline-btn" data-close="requestSuccessModal">Keep browsing</button><button class="primary-btn" data-success-journey>View request</button></div></article></div>
+  <div class="modal-backdrop hidden" id="requestSuccessModal" role="dialog" aria-modal="true"><article class="success-modal"><span class="success-icon">✓</span><h2>Seat request sent</h2><p>Your private chat with the driver is ready. Phone numbers remain hidden until the driver accepts the request.</p><div class="success-actions"><button class="secondary-outline-btn" data-success-journey>View request</button><button class="primary-btn" data-success-message>Message driver</button></div></article></div>
   <div class="modal-backdrop hidden" id="passengerModal" role="dialog" aria-modal="true"><article class="small-modal"><button class="modal-close" data-close="passengerModal">×</button><div id="passengerModalContent"></div></article></div>
   <div class="modal-backdrop hidden" id="genericModal" role="dialog" aria-modal="true"><article class="small-modal"><button class="modal-close" data-close="genericModal">×</button><div id="genericModalContent"></div></article></div>
 
@@ -383,13 +383,14 @@
       <form id="authForm" class="auth-form">
         <label class="signup-only hidden">Full name<input id="authFullName" maxlength="80" placeholder="Your real name" /></label>
         <label class="signup-only hidden">City<input id="authCity" list="nepalPlaces" placeholder="Kathmandu" /></label>
+        <label class="signup-only hidden">Mobile number<input id="authPhone" type="tel" autocomplete="tel" inputmode="tel" placeholder="98XXXXXXXX" /><small class="field-help">Required. Kept private until a seat request is accepted.</small></label>
         <label>Email address<input id="authEmail" type="email" required autocomplete="email" placeholder="you@example.com" /></label>
         <label>Password<input id="authPassword" type="password" minlength="6" required autocomplete="current-password" placeholder="At least 6 characters" /></label>
         <button class="primary-btn full-btn" id="authSubmit" type="submit">Log in</button>
       </form>
       <button class="forgot-btn" id="forgotPasswordBtn">Forgot password?</button>
       <p class="auth-message" id="authMessage"></p>
-      <p class="auth-privacy">Your email is used for account access and is not displayed publicly.</p>
+      <p class="auth-privacy">Your email is used for account access. Your mobile number is private and is shared only with an accepted driver or passenger.</p>
     </article>
   </div>
 
@@ -398,7 +399,7 @@
   <footer class="product-footer">
     <div class="footer-inner">
       <div class="footer-brand"><img src="assets/sangai-mark.svg" alt=""/><div><strong>Sangai</strong><span>Going your way.</span></div></div>
-      <div class="footer-copy"><p>Planned intercity seat sharing across Nepal.</p><small>© 2026 Sangai. Built for clearer, safer shared journeys.</small></div>
+      <div class="footer-copy"><p>Free journey matching. Drivers and passengers coordinate directly.</p><small>© 2026 Sangai. Sangai does not process journey payments.</small></div>
       <div class="footer-links"><button data-view="home">Find a seat</button><button data-view="offer">Offer seats</button><button data-view="safety">Safety</button><button data-view="profile">Account</button></div>
     </div>
   </footer>

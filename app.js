@@ -30,6 +30,7 @@
     pendingView: null,
     pendingAction: null,
     authMode: "login",
+    lastRequestId: null,
     channels: []
   };
 
@@ -69,6 +70,51 @@
     if (!clean) return "Vehicle details private";
     return clean.replace(/([A-Za-z0-9]{2,4})$/, (match) => "•".repeat(match.length));
   };
+  const normalizeNepalPhone = (value = "") => {
+    const digits = String(value).replace(/\D/g, "");
+    const local = digits.startsWith("977") && digits.length === 13 ? digits.slice(3) : digits;
+    return /^9\d{9}$/.test(local) ? `+977${local}` : null;
+  };
+  const displayPhone = (value = "") => {
+    const phone = normalizeNepalPhone(value);
+    return phone ? `${phone.slice(0, 4)} ${phone.slice(4, 6)} ${phone.slice(6, 10)} ${phone.slice(10)}` : "";
+  };
+  const hasRequiredPhone = () => Boolean(normalizeNepalPhone(state.privateProfile?.phone));
+
+  function openRequiredPhone(actionLabel = "continue", afterSave = null) {
+    const existing = state.privateProfile?.phone || state.user?.user_metadata?.phone || "";
+    $("genericModalContent").innerHTML = `<div class="generic-modal-content phone-required-modal">
+      <span class="modal-kicker">PRIVATE CONTACT</span>
+      <h2>Add your mobile number</h2>
+      <p>A mobile number is required to ${escapeHtml(actionLabel)}. It stays private while a request is pending and is shared only after the driver accepts.</p>
+      <form class="auth-form" id="requiredPhoneForm">
+        <label>Nepal mobile number<input name="phone" type="tel" inputmode="tel" autocomplete="tel" value="${escapeHtml(existing)}" placeholder="98XXXXXXXX" required /></label>
+        <div class="privacy-note"><strong>Private by default</strong><span>Other users cannot see this number in search results, public profiles or pending requests.</span></div>
+        <button class="primary-btn full-btn" type="submit">Save and continue</button>
+      </form>
+    </div>`;
+    openModal("genericModal");
+    $("requiredPhoneForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const phone = normalizeNepalPhone(new FormData(event.currentTarget).get("phone"));
+      if (!phone) { toast("Enter a valid 10-digit Nepal mobile number."); return; }
+      const submit = event.currentTarget.querySelector('button[type="submit"]');
+      submit.disabled = true;
+      submit.textContent = "Saving…";
+      const { error } = await client.from("private_profiles").upsert(
+        { user_id: state.user.id, phone },
+        { onConflict: "user_id" }
+      );
+      submit.disabled = false;
+      submit.textContent = "Save and continue";
+      if (error) { toast(error.message); return; }
+      state.privateProfile = { ...(state.privateProfile || {}), user_id: state.user.id, phone };
+      closeModal("genericModal");
+      renderProfile();
+      toast("Mobile number saved privately.");
+      if (typeof afterSave === "function") await afterSave();
+    });
+  }
 
   function toast(message) {
     const node = document.createElement("div");
@@ -299,7 +345,7 @@
     if (ownRide) {
       requestContent = `<p>This is your published ride. Manage requests and status from My journeys.</p><button class="primary-btn" data-view="journeys">Manage ride</button>`;
     } else if (already) {
-      requestContent = `<p>Your request status is <strong>${escapeHtml(statusLabel(already.status))}</strong>. Manage it from My journeys.</p><button class="primary-btn" data-view-request>View request</button>`;
+      requestContent = `<p>Your request status is <strong>${escapeHtml(statusLabel(already.status))}</strong>. You can message the driver while the request is being reviewed.</p><div class="request-inline-actions"><button class="secondary-outline-btn" data-view-request>View request</button><button class="primary-btn" data-request-message="${already.id}">Message driver</button></div>`;
     } else if (!state.session) {
       requestContent = `<p>Log in to introduce yourself and request ${state.passengers} seat${state.passengers > 1 ? "s" : ""}.</p><button class="primary-btn" data-login-request="${ride.id}">Log in to request</button>`;
     } else {
@@ -319,6 +365,21 @@
   }
 
   async function sendRideRequest(id) {
+    if (!hasRequiredPhone()) {
+      const draft = {
+        pickup: $("requestPickup")?.value || "",
+        luggage: $("requestLuggage")?.value || "",
+        message: $("requestMessage")?.value || ""
+      };
+      closeModal("rideModal");
+      openRequiredPhone("request a seat", () => {
+        openRide(id);
+        if ($("requestPickup") && draft.pickup) $("requestPickup").value = draft.pickup;
+        if ($("requestLuggage") && draft.luggage) $("requestLuggage").value = draft.luggage;
+        if ($("requestMessage")) $("requestMessage").value = draft.message;
+      });
+      return;
+    }
     const ride = state.rides.find(x => x.id === id);
     const message = $("requestMessage")?.value.trim();
     if (!message) { toast("Please add a short introduction."); return; }
@@ -336,6 +397,7 @@
       if (button) { button.disabled = false; button.textContent = "Send seat request"; }
       return;
     }
+    state.lastRequestId = requestId;
     const { data: conversation } = await client.from("conversations").select("id").eq("request_id", requestId).single();
     if (conversation) await client.from("messages").insert({ conversation_id: conversation.id, sender_id: state.user.id, body: message });
     closeModal("rideModal");
@@ -362,6 +424,10 @@
 
   async function publishRide(form) {
     requireAuth(async () => {
+      if (!hasRequiredPhone()) {
+        openRequiredPhone("publish a journey", () => publishRide(form));
+        return;
+      }
       const d = Object.fromEntries(new FormData(form).entries());
       const plate = d.plate.trim();
       const vehiclePayload = {
@@ -445,7 +511,7 @@
 
   function requestCard(q) {
     const p = q.passenger || {};
-    return `<div class="request-card"><button class="driver-avatar ${p.avatar_url ? "has-photo" : ""}" data-passenger="${q.id}">${p.avatar_url ? `<img src="${escapeHtml(p.avatar_url)}" alt="${escapeHtml(p.full_name || "Passenger")}" />` : initials(p.full_name)}</button><div><strong>${escapeHtml(p.full_name || "Passenger")} · ${p.average_rating ? `★ ${Number(p.average_rating).toFixed(1)}` : "New member"}</strong><span>${q.requested_seats} seat${q.requested_seats > 1 ? "s" : ""} · ${escapeHtml(q.pickup_point)} · ${escapeHtml(q.luggage)}</span><span>${escapeHtml(q.message)}</span></div><div class="request-actions">${q.status === "requested" ? `<button class="accept" data-request-action="${q.id}|accept">Accept</button><button class="message" data-request-action="${q.id}|message">Ask</button><button class="decline" data-request-action="${q.id}|decline">Decline</button>` : `<span class="status-badge ${q.status}">${statusLabel(q.status)}</span>${q.status === "accepted" ? `<button class="message" data-request-action="${q.id}|message">Message</button><button class="message" data-confirmed-details="${q.id}">Details</button>` : ""}`}</div></div>`;
+    return `<div class="request-card"><button class="driver-avatar ${p.avatar_url ? "has-photo" : ""}" data-passenger="${q.id}">${p.avatar_url ? `<img src="${escapeHtml(p.avatar_url)}" alt="${escapeHtml(p.full_name || "Passenger")}" />` : initials(p.full_name)}</button><div><strong>${escapeHtml(p.full_name || "Passenger")} · ${p.average_rating ? `★ ${Number(p.average_rating).toFixed(1)}` : "New member"}</strong><span>${q.requested_seats} seat${q.requested_seats > 1 ? "s" : ""} · ${escapeHtml(q.pickup_point)} · ${escapeHtml(q.luggage)}</span><span>${escapeHtml(q.message)}</span></div><div class="request-actions">${q.status === "requested" ? `<button class="accept" data-request-action="${q.id}|accept">Accept</button><button class="message" data-request-action="${q.id}|message">Message</button><button class="decline" data-request-action="${q.id}|decline">Decline</button>` : `<span class="status-badge ${q.status}">${statusLabel(q.status)}</span>${q.status === "accepted" ? `<button class="message" data-request-action="${q.id}|message">Message</button><button class="call" data-call-request="${q.id}">Call</button><button class="message" data-confirmed-details="${q.id}">Details</button>` : ""}`}</div></div>`;
   }
 
   function driverRideCard(row) {
@@ -457,7 +523,8 @@
 
   function passengerJourneyCard(q) {
     const r = q.ride ? normalizeRide(q.ride) : null;
-    return `<article class="journey-card"><div class="journey-card-head"><div><h3>${r ? `${escapeHtml(r.origin)} → ${escapeHtml(r.destination)}` : "Ride unavailable"}</h3><p>${r ? `${prettyDate(r.date)} · ${escapeHtml(r.time)} · Driver: ${escapeHtml(r.driver)}` : "The ride may have been removed."}</p></div><span class="status-badge ${q.status}">${statusLabel(q.status)}</span></div><div class="journey-details"><div><span>PICKUP</span><strong>${escapeHtml(q.pickup_point)}</strong></div><div><span>SEATS</span><strong>${q.requested_seats}</strong></div><div><span>LUGGAGE</span><strong>${escapeHtml(q.luggage)}</strong></div><div><span>VEHICLE</span><strong>${r ? escapeHtml(r.vehicle) : "—"}</strong></div></div><div class="journey-actions">${q.status === "accepted" ? `<button class="small-action primary" data-request-message="${q.id}">Message driver</button><button class="small-action" data-confirmed-details="${q.id}">Confirmed details</button>` : ""}${r ? `<button class="small-action" data-open-ride="${r.id}">View ride</button>` : ""}${!["completed", "cancelled", "declined"].includes(q.status) ? `<button class="small-action danger" data-cancel-request="${q.id}">Cancel request</button>` : ""}</div></article>`;
+    const canMessage = ["requested", "accepted"].includes(q.status);
+    return `<article class="journey-card"><div class="journey-card-head"><div><h3>${r ? `${escapeHtml(r.origin)} → ${escapeHtml(r.destination)}` : "Ride unavailable"}</h3><p>${r ? `${prettyDate(r.date)} · ${escapeHtml(r.time)} · Driver: ${escapeHtml(r.driver)}` : "The ride may have been removed."}</p></div><span class="status-badge ${q.status}">${statusLabel(q.status)}</span></div><div class="journey-details"><div><span>PICKUP</span><strong>${escapeHtml(q.pickup_point)}</strong></div><div><span>SEATS</span><strong>${q.requested_seats}</strong></div><div><span>LUGGAGE</span><strong>${escapeHtml(q.luggage)}</strong></div><div><span>VEHICLE</span><strong>${r ? escapeHtml(r.vehicle) : "—"}</strong></div></div><div class="journey-actions">${canMessage ? `<button class="small-action primary" data-request-message="${q.id}">Message driver</button>` : ""}${q.status === "accepted" ? `<button class="small-action call-action" data-call-request="${q.id}">Call driver</button><button class="small-action" data-confirmed-details="${q.id}">Confirmed details</button>` : ""}${r ? `<button class="small-action" data-open-ride="${r.id}">View ride</button>` : ""}${!["completed", "cancelled", "declined"].includes(q.status) ? `<button class="small-action danger" data-cancel-request="${q.id}">Cancel request</button>` : ""}</div>${q.status === "requested" ? `<p class="journey-help">Chat is open while the driver reviews your request. The phone number unlocks only after acceptance.</p>` : ""}</article>`;
   }
 
   function renderJourneys() {
@@ -485,6 +552,10 @@
       await loadConversations();
       const conv = state.conversations.find(c => c.request_id === id);
       if (conv) { state.activeConversation = conv.id; setView("inbox"); }
+      return;
+    }
+    if (action === "accept" && !hasRequiredPhone()) {
+      openRequiredPhone("accept this passenger", () => respondRequest(id, action));
       return;
     }
     const { error } = await client.rpc("respond_to_seat_request", { p_request_id: id, p_action: action });
@@ -515,8 +586,21 @@
     const isDriver = state.user.id !== state.passengerRequests.find(q => q.id === requestId)?.passenger_id;
     const contactName = isDriver ? d.passenger_name : d.driver_name;
     const contactPhone = isDriver ? d.passenger_phone : d.driver_phone;
-    $("genericModalContent").innerHTML = `<div class="generic-modal-content"><h2>Confirmed journey details</h2><p>These details are private to the accepted driver and passenger.</p><div class="detail-list"><article><strong>Contact</strong><span>${escapeHtml(contactName || "Sangai member")} · ${escapeHtml(contactPhone || "Phone not added")}</span></article><article><strong>Vehicle</strong><span>${escapeHtml([d.vehicle_colour, d.vehicle_model].filter(Boolean).join(" ") || "Vehicle not added")} · ${escapeHtml(d.vehicle_plate_number || "Plate not added")}</span></article><article><strong>Pickup and drop-off</strong><span>${escapeHtml(d.pickup_point)} → ${escapeHtml(d.dropoff_point)}</span></article><article><strong>Departure</strong><span>${prettyDate(d.departure_date)} · ${timeShort(d.departure_time)}</span></article></div><div class="generic-modal-actions"><button class="primary-btn full-btn" data-close="genericModal">Done</button></div></div>`;
+    const phone = normalizeNepalPhone(contactPhone);
+    $("genericModalContent").innerHTML = `<div class="generic-modal-content"><span class="modal-kicker">ACCEPTED REQUEST</span><h2>Confirmed journey details</h2><p>These details are private to the accepted driver and passenger.</p><div class="confirmed-contact"><div><span>CONTACT</span><strong>${escapeHtml(contactName || "Sangai member")}</strong><small>${escapeHtml(displayPhone(phone) || "Phone not added")}</small></div>${phone ? `<a class="call-link" href="tel:${escapeHtml(phone)}"><svg viewBox="0 0 24 24"><path d="M7 3h3l2 5-2 2c1.5 3 2.5 4 5 5l2-2 4 2v3c0 1.7-1.3 3-3 3C10.3 21 3 13.7 3 6c0-1.7 1.3-3 3-3h1Z"/></svg>Call now</a>` : ""}</div><div class="detail-list"><article><strong>Vehicle</strong><span>${escapeHtml([d.vehicle_colour, d.vehicle_model].filter(Boolean).join(" ") || "Vehicle not added")} · ${escapeHtml(d.vehicle_plate_number || "Plate not added")}</span></article><article><strong>Pickup and drop-off</strong><span>${escapeHtml(d.pickup_point)} → ${escapeHtml(d.dropoff_point)}</span></article><article><strong>Departure</strong><span>${prettyDate(d.departure_date)} · ${timeShort(d.departure_time)}</span></article></div><div class="generic-modal-actions"><button class="secondary-outline-btn" data-request-message="${requestId}">Message</button><button class="primary-btn" data-close="genericModal">Done</button></div></div>`;
     openModal("genericModal");
+  }
+
+  async function callAcceptedContact(requestId) {
+    const { data, error } = await client.rpc("get_accepted_request_details", { p_request_id: requestId });
+    if (error) { toast(error.message); return; }
+    const d = data?.[0];
+    if (!d) { toast("Contact details are not available yet."); return; }
+    const passengerRequest = state.passengerRequests.find(q => q.id === requestId);
+    const isPassenger = Boolean(passengerRequest && passengerRequest.passenger_id === state.user.id);
+    const phone = normalizeNepalPhone(isPassenger ? d.driver_phone : d.passenger_phone);
+    if (!phone) { toast("The other member has not added a valid phone number."); return; }
+    window.location.href = `tel:${phone}`;
   }
 
   function openPassenger(id) {
@@ -532,7 +616,7 @@
     if (!state.user) return;
     $("conversationList").innerHTML = loadingHtml("Loading messages", "Connecting private conversations.");
     $("chatPanel").innerHTML = `<div class="conversation-empty"><div><strong>Select a conversation</strong>Messages are private to the driver and passenger.</div></div>`;
-    const { data, error } = await client.from("conversations").select(`*, ride:rides!conversations_ride_id_fkey(id,origin,destination,departure_date,departure_time), driver:profiles!conversations_driver_id_fkey(*), passenger:profiles!conversations_passenger_id_fkey(*)`).order("created_at", { ascending: false });
+    const { data, error } = await client.from("conversations").select(`*, request:seat_requests!conversations_request_id_fkey(id,status), ride:rides!conversations_ride_id_fkey(id,origin,destination,departure_date,departure_time), driver:profiles!conversations_driver_id_fkey(*), passenger:profiles!conversations_passenger_id_fkey(*)`).order("created_at", { ascending: false });
     if (error) {
       $("conversationList").innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
       return;
@@ -573,7 +657,8 @@
     if (!c) return;
     const person = otherPerson(c) || {};
     state.activeMessages = c.messages;
-    $("chatPanel").innerHTML = `<div class="chat-header"><div class="chat-person">${avatarMarkup(person.full_name, person.avatar_url)}<div><strong>${escapeHtml(person.full_name || "Sangai member")}</strong><span>Private conversation</span></div></div><span class="chat-ride">${escapeHtml(c.ride.origin)} → ${escapeHtml(c.ride.destination)}</span></div><div class="message-stream" id="messageStream">${c.messages.map(m => `<div class="message ${m.sender_id === state.user.id ? "mine" : ""}">${escapeHtml(m.body)}<small>${new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div>`).join("")}</div><form class="chat-compose" id="chatForm"><input id="chatInput" maxlength="500" placeholder="Write a message…" autocomplete="off"/><button aria-label="Send"><svg viewBox="0 0 24 24"><path d="m3 11 18-8-8 18-2-8-8-2Z"/><path d="m11 13 5-5"/></svg></button></form>`;
+    const callUnlocked = ["accepted", "completed"].includes(c.request?.status);
+    $("chatPanel").innerHTML = `<div class="chat-header"><div class="chat-person">${avatarMarkup(person.full_name, person.avatar_url)}<div><strong>${escapeHtml(person.full_name || "Sangai member")}</strong><span>${callUnlocked ? "Seat accepted · phone unlocked" : "Request pending · chat is open"}</span></div></div><div class="chat-header-actions"><span class="chat-ride">${escapeHtml(c.ride.origin)} → ${escapeHtml(c.ride.destination)}</span>${callUnlocked ? `<button class="chat-call-btn" data-call-request="${c.request_id}"><svg viewBox="0 0 24 24"><path d="M7 3h3l2 5-2 2c1.5 3 2.5 4 5 5l2-2 4 2v3c0 1.7-1.3 3-3 3C10.3 21 3 13.7 3 6c0-1.7 1.3-3 3-3h1Z"/></svg>Call</button>` : ""}</div></div><div class="message-stream" id="messageStream">${c.messages.map(m => `<div class="message ${m.sender_id === state.user.id ? "mine" : ""}">${escapeHtml(m.body)}<small>${new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div>`).join("")}</div><form class="chat-compose" id="chatForm"><input id="chatInput" maxlength="500" placeholder="Write a message…" autocomplete="off"/><button aria-label="Send"><svg viewBox="0 0 24 24"><path d="m3 11 18-8-8 18-2-8-8-2Z"/><path d="m11 13 5-5"/></svg></button></form>`;
     $("chatForm").addEventListener("submit", sendMessage);
     client.rpc("mark_conversation_read", { p_conversation_id: c.id }).then(() => { c.messages.forEach(m => { if (m.sender_id !== state.user.id) m.read_at = new Date().toISOString(); }); updateMessageBadge(); });
     setTimeout(() => { const stream = $("messageStream"); if (stream) stream.scrollTop = stream.scrollHeight; }, 0);
@@ -599,7 +684,7 @@
   function verificationItems() {
     const p = state.profile || {};
     return [
-      { key: "phone_verified", title: "Phone number", subtitle: "Reviewed manually by Sangai", done: p.phone_verified },
+      { key: "phone_added", title: "Mobile number", subtitle: hasRequiredPhone() ? "Added privately · shared after acceptance" : "Required to publish or request", done: hasRequiredPhone(), doneLabel: "Added" },
       { key: "identity_verified", title: "Government identity", subtitle: "Citizenship or passport", done: p.identity_verified },
       { key: "licence_verified", title: "Driving licence", subtitle: "Required for a verified driver", done: p.licence_verified },
       { key: "vehicle_verified", title: "Vehicle bluebook", subtitle: "Required for a verified vehicle", done: p.vehicle_verified }
@@ -610,7 +695,7 @@
     const items = verificationItems();
     const completed = items.filter(i => i.done).length;
     const percent = Math.round(completed / items.length * 100);
-    const html = items.map(i => `<div class="verification-item ${i.done ? "" : "pending"}"><span class="check-icon">${i.done ? "✓" : "○"}</span><div><strong>${escapeHtml(i.title)}</strong><span>${escapeHtml(i.subtitle)}</span></div>${i.done ? `<span class="verified-label">Verified</span>` : `<span class="status-badge requested">Pending review</span>`}</div>`).join("");
+    const html = items.map(i => `<div class="verification-item ${i.done ? "" : "pending"}"><span class="check-icon">${i.done ? "✓" : "○"}</span><div><strong>${escapeHtml(i.title)}</strong><span>${escapeHtml(i.subtitle)}</span></div>${i.done ? `<span class="verified-label">${escapeHtml(i.doneLabel || "Verified")}</span>` : `<span class="status-badge requested">${i.key === "phone_added" ? "Required" : "Pending review"}</span>`}</div>`).join("");
     if ($("verificationList")) $("verificationList").innerHTML = html;
     if ($("safetyVerificationList")) $("safetyVerificationList").innerHTML = html;
     if ($("verificationPercent")) $("verificationPercent").textContent = `${percent}%`;
@@ -653,7 +738,7 @@
   function openProfileEditor() {
     const p = state.profile || {};
     const pp = state.privateProfile || {};
-    $("genericModalContent").innerHTML = `<div class="generic-modal-content"><h2>Edit profile</h2><p>Use your real information so drivers and passengers know who they are meeting.</p><form class="auth-form" id="profileEditForm"><label>Profile photo<input name="avatar_file" type="file" accept="image/jpeg,image/png,image/webp" /><small class="field-help">JPG, PNG or WebP · maximum 2 MB</small></label><label>Full name<input name="full_name" value="${escapeHtml(p.full_name || "")}" required /></label><label>City<input name="city" list="nepalPlaces" value="${escapeHtml(p.city || "")}" /></label><label>Phone<input name="phone" value="${escapeHtml(pp.phone || "")}" placeholder="+977 98…" /></label><label>Short bio<input name="bio" value="${escapeHtml(p.bio || "")}" maxlength="180" placeholder="A short public introduction" /></label><label>Trusted contact name<input name="emergency_contact_name" value="${escapeHtml(pp.emergency_contact_name || "")}" /></label><label>Trusted contact phone<input name="emergency_contact_phone" value="${escapeHtml(pp.emergency_contact_phone || "")}" /></label><button class="primary-btn full-btn" type="submit">Save profile</button></form></div>`;
+    $("genericModalContent").innerHTML = `<div class="generic-modal-content"><h2>Edit profile</h2><p>Use your real information so drivers and passengers know who they are meeting.</p><form class="auth-form" id="profileEditForm"><label>Profile photo<input name="avatar_file" type="file" accept="image/jpeg,image/png,image/webp" /><small class="field-help">JPG, PNG or WebP · maximum 2 MB</small></label><label>Full name<input name="full_name" value="${escapeHtml(p.full_name || "")}" required /></label><label>City<input name="city" list="nepalPlaces" value="${escapeHtml(p.city || "")}" /></label><label>Mobile number<input name="phone" type="tel" inputmode="tel" autocomplete="tel" value="${escapeHtml(pp.phone || "")}" placeholder="98XXXXXXXX" required /><small class="field-help">Required. Visible only after request acceptance.</small></label><label>Short bio<input name="bio" value="${escapeHtml(p.bio || "")}" maxlength="180" placeholder="A short public introduction" /></label><label>Trusted contact name<input name="emergency_contact_name" value="${escapeHtml(pp.emergency_contact_name || "")}" /></label><label>Trusted contact phone<input name="emergency_contact_phone" value="${escapeHtml(pp.emergency_contact_phone || "")}" /></label><button class="primary-btn full-btn" type="submit">Save profile</button></form></div>`;
     openModal("genericModal");
     $("profileEditForm").addEventListener("submit", saveProfile);
   }
@@ -672,9 +757,12 @@
       if (uploadError) { toast(uploadError.message); return; }
       avatarUrl = client.storage.from("avatars").getPublicUrl(path).data.publicUrl + `?v=${Date.now()}`;
     }
+    const phone = normalizeNepalPhone(d.phone);
+    if (!phone) { toast("Enter a valid 10-digit Nepal mobile number."); return; }
+    const emergencyPhone = d.emergency_contact_phone.trim() ? (normalizeNepalPhone(d.emergency_contact_phone) || d.emergency_contact_phone.trim()) : null;
     const [{ error: pError }, { error: ppError }] = await Promise.all([
       client.from("profiles").update({ full_name: d.full_name.trim(), city: d.city.trim() || null, bio: d.bio.trim() || null, avatar_url: avatarUrl }).eq("id", state.user.id),
-      client.from("private_profiles").update({ phone: d.phone.trim() || null, emergency_contact_name: d.emergency_contact_name.trim() || null, emergency_contact_phone: d.emergency_contact_phone.trim() || null }).eq("user_id", state.user.id)
+      client.from("private_profiles").upsert({ user_id: state.user.id, phone, emergency_contact_name: d.emergency_contact_name.trim() || null, emergency_contact_phone: emergencyPhone }, { onConflict: "user_id" })
     ]);
     if (pError || ppError) { toast((pError || ppError).message); return; }
     closeModal("genericModal");
@@ -694,6 +782,7 @@
     all(".signup-only").forEach(x => x.classList.toggle("hidden", mode !== "signup"));
     $("authTitle").textContent = mode === "signup" ? "Create your account" : "Welcome back";
     $("authSubtitle").textContent = mode === "signup" ? "Join Sangai to offer seats and request real journeys." : "Log in to offer seats, request rides and message privately.";
+    $("authPhone").required = mode === "signup";
     $("authSubmit").textContent = mode === "signup" ? "Create account" : "Log in";
     $("authMessage").textContent = "";
     openModal("authModal");
@@ -708,8 +797,10 @@
     let result;
     if (state.authMode === "signup") {
       const fullName = $("authFullName").value.trim();
+      const phone = normalizeNepalPhone($("authPhone").value);
       if (!fullName) { $("authMessage").textContent = "Please enter your full name."; submit.disabled = false; submit.textContent = "Create account"; return; }
-      result = await client.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin, data: { full_name: fullName, city: $("authCity").value.trim() } } });
+      if (!phone) { $("authMessage").textContent = "Enter a valid 10-digit Nepal mobile number."; submit.disabled = false; submit.textContent = "Create account"; return; }
+      result = await client.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin, data: { full_name: fullName, city: $("authCity").value.trim(), phone } } });
     } else result = await client.auth.signInWithPassword({ email, password });
     submit.disabled = false; submit.textContent = state.authMode === "signup" ? "Create account" : "Log in";
     if (result.error) { $("authMessage").textContent = result.error.message; return; }
@@ -825,12 +916,14 @@
       const request = e.target.closest("[data-request-ride]"); if (request) { sendRideRequest(request.dataset.requestRide); return; }
       const loginRequest = e.target.closest("[data-login-request]"); if (loginRequest) { const rideId = loginRequest.dataset.loginRequest; closeModal("rideModal"); requireAuth(() => openRide(rideId)); return; }
       const viewRequest = e.target.closest("[data-view-request], [data-success-journey]"); if (viewRequest) { closeModal("requestSuccessModal"); closeModal("rideModal"); state.journeyTab = "passenger"; setView("journeys"); return; }
+      const successMessage = e.target.closest("[data-success-message]"); if (successMessage) { closeModal("requestSuccessModal"); await loadConversations(); const c = state.conversations.find(x => x.request_id === state.lastRequestId); if (c) { state.activeConversation = c.id; setView("inbox"); } else toast("Your conversation is being prepared. Open Messages in a moment."); return; }
       const action = e.target.closest("[data-request-action]"); if (action) { const [id, type] = action.dataset.requestAction.split("|"); closeModal("passengerModal"); respondRequest(id, type); return; }
       const passenger = e.target.closest("[data-passenger]"); if (passenger) { openPassenger(passenger.dataset.passenger); return; }
       const rideStatus = e.target.closest("[data-ride-status]"); if (rideStatus) { const [id, status] = rideStatus.dataset.rideStatus.split("|"); changeRideStatus(id, status); return; }
       const cancel = e.target.closest("[data-cancel-request]"); if (cancel) { cancelSeatRequest(cancel.dataset.cancelRequest); return; }
       const confirmed = e.target.closest("[data-confirmed-details]"); if (confirmed) { showConfirmedDetails(confirmed.dataset.confirmedDetails); return; }
-      const requestMessage = e.target.closest("[data-request-message]"); if (requestMessage) { await loadConversations(); const c = state.conversations.find(x => x.request_id === requestMessage.dataset.requestMessage); if (c) { state.activeConversation = c.id; setView("inbox"); } return; }
+      const call = e.target.closest("[data-call-request]"); if (call) { callAcceptedContact(call.dataset.callRequest); return; }
+      const requestMessage = e.target.closest("[data-request-message]"); if (requestMessage) { closeModal("genericModal"); closeModal("rideModal"); await loadConversations(); const c = state.conversations.find(x => x.request_id === requestMessage.dataset.requestMessage); if (c) { state.activeConversation = c.id; setView("inbox"); } else toast("Conversation not found. Refresh and try again."); return; }
       const conversation = e.target.closest("[data-conversation]"); if (conversation) { state.activeConversation = conversation.dataset.conversation; renderInbox(); return; }
     });
   }

@@ -750,3 +750,35 @@ img { max-width: 100%; }
   .profile-actions { width: 100%; margin-top: 14px; }
   .profile-actions button { flex: 1; }
 }
+
+
+/* ==========================================================================
+   Free matchmaking communication flow
+   ========================================================================== */
+.field-help{display:block;margin-top:6px;color:var(--muted);font-size:10px;font-weight:500;line-height:1.45}
+.modal-kicker{display:block;margin-bottom:9px;color:var(--maroon,#77152b);font-size:9px;font-weight:900;letter-spacing:.13em}
+.phone-required-modal p{max-width:38rem}
+.privacy-note{margin:3px 0 4px;padding:12px 13px;display:grid;gap:3px;border:1px solid rgba(119,21,43,.13);border-radius:10px;background:#fbf4f5}
+.privacy-note strong{color:var(--maroon,#77152b);font-size:10px}
+.privacy-note span{color:var(--muted);font-size:9px;line-height:1.5}
+.request-inline-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}
+.journey-help{margin:13px 0 0;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:9px;line-height:1.5}
+.request-actions .call,.call-action{border-color:rgba(119,21,43,.18)!important;color:#fff!important;background:var(--maroon,#77152b)!important}
+.confirmed-contact{margin:17px 0;padding:15px;display:flex;align-items:center;justify-content:space-between;gap:16px;border:1px solid rgba(119,21,43,.14);border-radius:12px;background:#fbf5f6}
+.confirmed-contact span,.confirmed-contact strong,.confirmed-contact small{display:block}
+.confirmed-contact span{color:var(--muted);font-size:8px;font-weight:900;letter-spacing:.1em}
+.confirmed-contact strong{margin-top:4px;font-size:14px}
+.confirmed-contact small{margin-top:3px;color:var(--muted);font-size:10px}
+.call-link,.chat-call-btn{min-height:40px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;border:0;border-radius:9px;color:#fff;background:var(--maroon,#77152b);text-decoration:none;font-size:10px;font-weight:900}
+.call-link svg,.chat-call-btn svg{width:16px}
+.chat-header-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px}
+.chat-call-btn{min-height:34px;padding:0 11px}
+.auth-form input[type="tel"]{letter-spacing:.02em}
+@media(max-width:760px){
+  .request-inline-actions{grid-template-columns:1fr}
+  .confirmed-contact{align-items:flex-start;flex-direction:column}
+  .call-link{width:100%}
+  .chat-header{align-items:flex-start}
+  .chat-header-actions{align-items:flex-end;flex-direction:column}
+  .chat-call-btn{min-height:36px}
+}
