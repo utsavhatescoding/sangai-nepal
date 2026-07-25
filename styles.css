@@ -782,3 +782,655 @@ img { max-width: 100%; }
   .chat-header-actions{align-items:flex-end;flex-direction:column}
   .chat-call-btn{min-height:36px}
 }
+
+
+/* ==========================================================================
+   Desktop readability upgrade
+   Added to eliminate the need for browser zoom on laptops and desktops.
+   ========================================================================== */
+
+body {
+  font-size: 16px;
+}
+
+/* Comfortable content width for the larger type scale */
+@media (min-width: 900px) {
+  .header-inner {
+    width: min(1320px, calc(100% - 56px));
+  }
+
+  .app-shell {
+    width: min(1240px, calc(100% - 56px));
+  }
+
+  .narrow-shell {
+    width: min(1040px, calc(100% - 56px));
+  }
+
+  /* Header */
+  .app-header {
+    height: 78px;
+  }
+
+  .brand-mark {
+    width: 46px;
+    height: 46px;
+  }
+
+  .brand {
+    min-width: 190px;
+  }
+
+  .brand-copy strong {
+    font-size: 23px;
+  }
+
+  .brand-copy small {
+    font-size: 10px;
+  }
+
+  .nav-link {
+    min-height: 43px;
+    padding: 0 15px;
+    font-size: 14px;
+  }
+
+  .auth-btn,
+  .avatar-btn {
+    font-size: 13px;
+  }
+
+  .auth-btn {
+    min-height: 43px;
+    padding: 0 18px;
+  }
+
+  .nav-badge,
+  .notification-btn span {
+    font-size: 10px;
+  }
+
+  .setup-banner {
+    font-size: 13px;
+  }
+
+  /* Shared labels and controls */
+  .eyebrow,
+  .section-label,
+  .sidebar-label,
+  .search-eyebrow,
+  .modal-kicker {
+    font-size: 11px;
+  }
+
+  .primary-btn,
+  .secondary-outline-btn {
+    min-height: 48px;
+    padding: 0 20px;
+    font-size: 13px;
+  }
+
+  /* Hero */
+  .hero-grid {
+    min-height: 480px;
+    grid-template-columns: minmax(0, 1.15fr) 450px;
+    gap: 76px;
+    padding: 70px 0 78px;
+  }
+
+  .brand-kicker {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .hero-copy > p {
+    max-width: 680px;
+    font-size: 18px;
+    line-height: 1.7;
+  }
+
+  .hero-assurance span {
+    font-size: 13px;
+  }
+
+  .hero-assurance b {
+    width: 29px;
+    height: 29px;
+    font-size: 10px;
+  }
+
+  .brand-route-panel {
+    padding: 29px;
+  }
+
+  .route-panel-head {
+    font-size: 11px;
+  }
+
+  .route-station small {
+    font-size: 10px;
+  }
+
+  .route-station strong {
+    font-size: 23px;
+  }
+
+  .route-station span {
+    font-size: 12px;
+  }
+
+  .route-stem span {
+    font-size: 10px;
+  }
+
+  .driver-shortcut strong {
+    font-size: 14px;
+  }
+
+  .driver-shortcut small {
+    font-size: 12px;
+  }
+
+  .driver-shortcut b {
+    font-size: 12px;
+  }
+
+  /* Search */
+  .search-panel {
+    padding: 25px;
+  }
+
+  .search-panel-top strong {
+    font-size: 20px;
+  }
+
+  .search-offer-link {
+    min-height: 40px;
+    padding: 0 13px;
+    font-size: 12px;
+  }
+
+  .field-label {
+    font-size: 11px;
+  }
+
+  .location-field input {
+    height: 34px;
+    font-size: 19px;
+  }
+
+  .date-chip {
+    min-height: 46px;
+    padding: 0 15px;
+    font-size: 13px;
+  }
+
+  .date-chip small {
+    font-size: 10px;
+  }
+
+  .seat-stepper {
+    height: 46px;
+  }
+
+  .seat-stepper strong {
+    font-size: 14px;
+  }
+
+  .popular-row > span {
+    font-size: 11px;
+  }
+
+  .popular-row button {
+    padding: 9px 12px;
+    font-size: 11px;
+  }
+
+  /* Trust row and results */
+  .trust-summary strong {
+    font-size: 14px;
+  }
+
+  .trust-summary div span {
+    font-size: 12px;
+  }
+
+  .route-summary {
+    font-size: 11px;
+  }
+
+  .result-heading h2 {
+    font-size: 35px;
+  }
+
+  .result-tools,
+  .result-tools select {
+    font-size: 12px;
+  }
+
+  .filter-chip {
+    min-height: 39px;
+    padding: 0 14px;
+    font-size: 12px;
+  }
+
+  /* Ride cards */
+  .ride-card {
+    padding: 24px;
+    grid-template-columns: minmax(0, 1fr) 210px;
+    gap: 26px;
+  }
+
+  .departure-tag {
+    font-size: 11px;
+  }
+
+  .ride-tags span {
+    padding: 6px 9px;
+    font-size: 10px;
+  }
+
+  .route-names strong {
+    font-size: 19px;
+  }
+
+  .route-names span {
+    font-size: 12px;
+  }
+
+  .route-duration span {
+    font-size: 10px;
+  }
+
+  .route-duration strong {
+    font-size: 13px;
+  }
+
+  .ride-meta {
+    font-size: 11px;
+  }
+
+  .driver-mini strong {
+    font-size: 13px;
+  }
+
+  .driver-mini span {
+    font-size: 11px;
+  }
+
+  .price-block span {
+    font-size: 10px;
+  }
+
+  .price-block strong {
+    font-size: 24px;
+  }
+
+  .view-ride-btn {
+    min-height: 42px;
+    font-size: 12px;
+  }
+
+  /* Sidebar */
+  .safety-card h3,
+  .pilot-card h3 {
+    font-size: 22px;
+  }
+
+  .safety-card > p,
+  .pilot-card p,
+  .assurance-list span {
+    font-size: 12px;
+  }
+
+  .assurance-list i {
+    font-size: 10px;
+  }
+
+  .text-btn,
+  .danger-text-btn {
+    font-size: 12px;
+  }
+
+  .pilot-card > span {
+    font-size: 10px;
+  }
+
+  .empty-state,
+  .loading-state {
+    font-size: 13px;
+  }
+
+  .empty-state strong,
+  .loading-state strong {
+    font-size: 16px;
+  }
+
+  /* Page headings and forms */
+  .page-heading > div > p:last-child {
+    font-size: 14px;
+  }
+
+  .plain-note strong {
+    font-size: 13px;
+  }
+
+  .plain-note span {
+    font-size: 11px;
+  }
+
+  .form-progress {
+    font-size: 11px;
+  }
+
+  .form-card-title > span {
+    width: 33px;
+    height: 33px;
+    font-size: 12px;
+  }
+
+  .form-card-title h2 {
+    font-size: 21px;
+  }
+
+  .form-card-title p {
+    font-size: 12px;
+  }
+
+  .form-grid label,
+  .auth-form label {
+    font-size: 12px;
+  }
+
+  .form-grid input,
+  .form-grid select,
+  .form-grid textarea,
+  .auth-form input,
+  .auth-form select,
+  .auth-form textarea {
+    min-height: 47px;
+    font-size: 14px;
+  }
+
+  .preference-grid label {
+    padding: 13px;
+    font-size: 11px;
+  }
+
+  .publish-bar strong {
+    font-size: 14px;
+  }
+
+  .publish-bar span {
+    font-size: 11px;
+  }
+
+  /* Journey management */
+  .journey-tabs button {
+    min-height: 42px;
+    font-size: 12px;
+  }
+
+  .journey-tabs span {
+    font-size: 10px;
+  }
+
+  .journey-card-head h3 {
+    font-size: 22px;
+  }
+
+  .journey-card-head p {
+    font-size: 11px;
+  }
+
+  .status-badge {
+    min-height: 28px;
+    font-size: 10px;
+  }
+
+  .journey-details span {
+    font-size: 10px;
+  }
+
+  .journey-details strong {
+    font-size: 12px;
+  }
+
+  .small-action {
+    min-height: 39px;
+    padding: 0 13px;
+    font-size: 11px;
+  }
+
+  .request-section > h4 {
+    font-size: 15px;
+  }
+
+  .request-card strong {
+    font-size: 12px;
+  }
+
+  .request-card span {
+    font-size: 11px;
+  }
+
+  .request-actions button {
+    min-height: 35px;
+    padding: 0 10px;
+    font-size: 10px;
+  }
+
+  .journey-help {
+    font-size: 11px;
+  }
+
+  /* Messaging */
+  .conversation-item {
+    padding: 18px;
+  }
+
+  .conversation-item strong {
+    font-size: 12px;
+  }
+
+  .conversation-item span {
+    font-size: 11px;
+  }
+
+  .conversation-item time {
+    font-size: 10px;
+  }
+
+  .chat-person strong {
+    font-size: 13px;
+  }
+
+  .chat-person span,
+  .chat-ride {
+    font-size: 11px;
+  }
+
+  .message {
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .message small {
+    font-size: 10px;
+  }
+
+  .chat-compose input {
+    min-height: 47px;
+    font-size: 14px;
+  }
+
+  .conversation-empty {
+    font-size: 12px;
+  }
+
+  .conversation-empty strong {
+    font-size: 19px;
+  }
+
+  /* Profile and safety */
+  .profile-name-row h1 {
+    font-size: 33px;
+  }
+
+  .verified-label {
+    font-size: 10px;
+  }
+
+  .profile-main p,
+  .profile-rating span {
+    font-size: 11px;
+  }
+
+  .content-card-head h2 {
+    font-size: 21px;
+  }
+
+  .content-card-head p {
+    font-size: 11px;
+  }
+
+  .content-card-head > strong {
+    font-size: 21px;
+  }
+
+  .verification-item strong,
+  .review-list strong,
+  .contact-card strong {
+    font-size: 12px;
+  }
+
+  .verification-item span,
+  .review-list small,
+  .contact-card small {
+    font-size: 10px;
+  }
+
+  .preference-list span {
+    font-size: 11px;
+  }
+
+  .review-list p {
+    font-size: 11px;
+  }
+
+  .review-list b {
+    font-size: 12px;
+  }
+
+  .principle-grid strong {
+    font-size: 12px;
+  }
+
+  .principle-grid span {
+    font-size: 10px;
+  }
+
+  /* Modals and authentication */
+  .modal-date {
+    font-size: 11px;
+  }
+
+  .modal-summary span {
+    font-size: 10px;
+  }
+
+  .modal-summary strong {
+    font-size: 12px;
+  }
+
+  .driver-row strong {
+    font-size: 13px;
+  }
+
+  .driver-row span,
+  .detail-row span,
+  .detail-row strong,
+  .safety-inline,
+  .request-box p,
+  .request-box label {
+    font-size: 11px;
+  }
+
+  .generic-modal-content p,
+  .success-modal p,
+  .passenger-profile p {
+    font-size: 12px;
+  }
+
+  .auth-logo span,
+  .auth-modal > p,
+  .field-help,
+  .privacy-note span {
+    font-size: 11px;
+  }
+
+  .auth-tabs button {
+    font-size: 12px;
+  }
+
+  .forgot-btn,
+  .auth-message,
+  .auth-privacy {
+    font-size: 11px !important;
+  }
+
+  .detail-list strong,
+  .detail-list span {
+    font-size: 11px;
+  }
+
+  .toast {
+    font-size: 12px;
+  }
+
+  .confirmed-contact span {
+    font-size: 10px;
+  }
+
+  .confirmed-contact strong {
+    font-size: 16px;
+  }
+
+  .confirmed-contact small,
+  .call-link,
+  .chat-call-btn {
+    font-size: 12px;
+  }
+
+  /* Footer */
+  .footer-brand span,
+  .footer-copy small,
+  .footer-links button,
+  .real-status {
+    font-size: 10px;
+  }
+
+  .footer-copy p,
+  .signout-btn,
+  .form-error,
+  .ride-live-note,
+  .pending-verification-note {
+    font-size: 11px;
+  }
+}
+
+/* Slightly larger desktop type for high-resolution laptop screens */
+@media (min-width: 1440px) {
+  body {
+    font-size: 17px;
+  }
+
+  .app-shell {
+    width: min(1280px, calc(100% - 72px));
+  }
+
+  .header-inner {
+    width: min(1360px, calc(100% - 72px));
+  }
+}
