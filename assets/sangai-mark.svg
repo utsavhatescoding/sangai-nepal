@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Sangai">
+  <rect width="64" height="64" rx="17" fill="#77152B"/>
+  <path d="M45 17C38 11 24 11 18 18c-7 9 2 15 13 17 12 2 19 7 15 15-4 8-19 8-28 1" fill="none" stroke="#FFF9F4" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="45" cy="17" r="3.6" fill="#D4A84E"/>
+  <circle cx="18" cy="51" r="3.6" fill="#D4A84E"/>
+</svg>
