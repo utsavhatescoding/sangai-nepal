@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://sangaijaum.netlify.app/sitemap.xml

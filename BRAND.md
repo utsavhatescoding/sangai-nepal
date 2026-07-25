@@ -1,43 +1,32 @@
-# Sangai Brand
-
-## Official name
-**Sangai**
-
-Nepali lockup: **सँगै**
-
-## Tagline
-**Going your way.**
-
-## Product description
-Sangai is a planned intercity seat-sharing marketplace. Drivers publish journeys they are already making; passengers request empty seats and contribute toward the journey cost.
-
-## Brand promise
-**A real route. A known driver. A clear seat.**
+# Sangai Brand System
 
 ## Positioning
-Sangai is not an on-demand taxi app. It is for matching people travelling in the same direction on a planned private journey.
+Sangai is a planned intercity seat-sharing platform. It is not an on-demand taxi marketplace.
 
-## Core language
-- Find a seat
-- Offer empty seats
-- Contribution per seat
-- Request a seat
-- Accept passenger
-- Confirmed journey
+## Official lockup
+- Name: **Sangai**
+- Nepali: **सँगै**
+- Tagline: **Going your way.**
 
-Avoid:
-- Book a taxi
-- Hire a driver
-- Fare bidding
-- Earn as a driver
-- Instant cab
+## Brand idea
+The logo is an S-shaped route connecting two people or places. The two gold dots represent a shared origin and destination.
 
 ## Colours
-- Sangai Green: `#123C31`
-- Deep Green: `#0A2D24`
-- Saffron: `#F3B64A`
-- Warm White: `#F6F7F3`
-- Coral accent: `#CF6948`
+- Sangai Maroon: `#77152B`
+- Deep Maroon: `#4E0C1C`
+- Warm Ivory: `#FAF8F4`
+- Charcoal: `#1D1A1B`
+- Route Gold: `#B88A36`
+- Muted Rose: `#F4E7E9`
 
-## Logo
-`assets/sangai-mark.svg` is the official app mark. It combines a car silhouette with two clearly separated seats/wheels and uses the green–saffron palette.
+## Product language
+Use: Find a seat, Offer seats, Request a seat, Contribution per seat, Planned journey.
+Avoid: Book a taxi, Hire a driver, Fare bidding, Earn as a driver.
+
+## Design rules
+- Small, controlled corner radii
+- Thin neutral borders
+- Shadows only for hierarchy, not decoration
+- Maroon for primary actions
+- Gold only for emphasis
+- Real profile photos when users upload them; initials are a neutral fallback

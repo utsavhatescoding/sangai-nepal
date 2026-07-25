@@ -3,27 +3,56 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Find a seat in a private car already going your way, or share your empty seats on planned intercity journeys across Nepal." />
-  <meta name="theme-color" content="#123c31" />
-  <title>Sangai — Going your way</title>
+  <meta name="description" content="Sangai connects people travelling between cities in Nepal. Find a seat in a private car already going your way, or offer your empty seats." />
+  <meta name="theme-color" content="#77152b" />
+  <meta name="color-scheme" content="light" />
+
+  <title>Sangai — Intercity seat sharing across Nepal</title>
+  <link rel="canonical" href="https://sangaijaum.netlify.app/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Sangai" />
+  <meta property="og:locale" content="en_NP" />
+  <meta property="og:url" content="https://sangaijaum.netlify.app/" />
+  <meta property="og:title" content="Sangai — Going your way" />
+  <meta property="og:description" content="Find a seat in a private car already travelling on your route, or share your empty seats on planned intercity journeys across Nepal." />
+  <meta property="og:image" content="https://sangaijaum.netlify.app/assets/sangai-share.png" />
+  <meta property="og:image:secure_url" content="https://sangaijaum.netlify.app/assets/sangai-share.png" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Sangai — Intercity seat sharing across Nepal" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Sangai — Going your way" />
+  <meta name="twitter:description" content="Planned intercity journeys. Clear details. Real people." />
+  <meta name="twitter:image" content="https://sangaijaum.netlify.app/assets/sangai-share.png" />
+
+  <link rel="icon" href="assets/sangai-mark.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="assets/sangai-app-icon.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Sangai",
+    "alternateName": "सँगै",
+    "url": "https://sangaijaum.netlify.app/",
+    "description": "Intercity seat sharing across Nepal."
+  }
+  </script>
 </head>
 <body>
-  <div class="prototype-strip hidden" aria-hidden="true">
-    <span class="prototype-dot"></span>
-    <span id="systemStripText">Sangai</span>
-    <button id="closePrototypeStrip" aria-label="Close prototype note">×</button>
-  </div>
-
-  <header class="app-header">
+<header class="app-header">
     <div class="header-inner">
       <button class="brand" data-view="home" aria-label="Sangai home">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 48 48"><path d="M7 29h34l-5-10H13L7 29Z"/><path d="M11 29v4m26-4v4M14 33h20"/><circle cx="15" cy="34" r="4"/><circle cx="33" cy="34" r="4"/></svg>
-        </span>
+        <img class="brand-mark" src="assets/sangai-mark.svg" alt="" aria-hidden="true" />
         <span class="brand-copy"><strong>Sangai</strong><small>सँगै · GOING YOUR WAY</small></span>
       </button>
 
@@ -32,44 +61,64 @@
         <button class="nav-link" data-view="offer">Offer seats</button>
         <button class="nav-link" data-view="journeys">My journeys</button>
         <button class="nav-link" data-view="inbox">Messages <span class="nav-badge hidden" id="messageBadge">0</span></button>
+        <button class="nav-link" data-view="safety">Safety</button>
       </nav>
 
       <div class="header-actions">
-        <button class="language-btn hidden" id="languageBtn" aria-hidden="true">EN</button>
         <button class="notification-btn" data-view="journeys" aria-label="Notifications">
           <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg>
           <span class="hidden">0</span>
         </button>
-        <button class="auth-btn" id="authButton">Log in</button><button class="avatar-btn hidden" id="avatarBtn" data-view="profile">UP</button>
+        <button class="auth-btn" id="authButton">Log in / Sign up</button>
+        <button class="avatar-btn hidden" id="avatarBtn" data-view="profile">S</button>
       </div>
     </div>
   </header>
 
-  <div class="setup-banner hidden" id="setupBanner"><strong>Service temporarily unavailable.</strong><span>Please refresh or contact Sangai support.</span></div>
+  <div class="setup-banner hidden" id="setupBanner" role="status"></div>
 
   <main>
     <section id="homeView" class="view">
-      <div class="app-shell home-shell">
-        <section class="welcome-row">
-          <div>
-            <p class="eyebrow">PLANNED INTERCITY JOURNEYS</p>
-            <h1>Going somewhere?</h1>
-            <p>Find a seat in a private car already going your way.</p>
+      <div class="home-hero">
+        <div class="app-shell hero-grid">
+          <div class="hero-copy">
+            <span class="brand-kicker"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 2.8 8.3 7 10 4.2-1.7 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-5"/></svg> Planned intercity seat sharing</span>
+            <h1>Real journeys.<br><span>Better together.</span></h1>
+            <p>Find a seat in a private car already travelling on your route—or share your empty seats with people going the same way.</p>
+            <div class="hero-assurance">
+              <span><b>01</b> Driver reviews every request</span>
+              <span><b>02</b> Contact details stay private</span>
+              <span><b>03</b> Clear pickup and contribution</span>
+            </div>
           </div>
-          <button class="driver-shortcut" data-view="offer">
-            <span class="shortcut-icon"><svg viewBox="0 0 24 24"><path d="M4 14h16l-2-5H7l-3 5Z"/><path d="M6 14v4m12-4v4M7 18h10"/></svg></span>
-            <span><strong>Already driving?</strong><small>Share your empty seats</small></span>
-            <b>→</b>
-          </button>
-        </section>
 
+          <aside class="brand-route-panel" aria-label="How Sangai works">
+            <div class="route-panel-head"><span>HOW SANGAI WORKS</span><img src="assets/sangai-mark-outline.svg" alt="" /></div>
+            <div class="route-journey">
+              <div class="route-station"><i></i><div><small>DRIVER PUBLISHES</small><strong>Kathmandu</strong><span>Planned departure</span></div></div>
+              <div class="route-stem"><span>same route</span></div>
+              <div class="route-station destination"><i></i><div><small>PASSENGER REQUESTS</small><strong>Hetauda</strong><span>Driver chooses who joins</span></div></div>
+            </div>
+            <button class="driver-shortcut" data-view="offer">
+              <span><strong>Already driving?</strong><small>Offer your empty seats</small></span>
+              <b>Offer seats <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></b>
+            </button>
+          </aside>
+        </div>
+      </div>
+
+      <div class="app-shell home-shell">
         <section class="search-panel" aria-label="Search rides">
+          <div class="search-panel-top">
+            <div><span class="search-eyebrow">FIND A JOURNEY</span><strong>Where are you going?</strong></div>
+            <button class="search-offer-link" data-view="offer"><svg viewBox="0 0 24 24"><path d="M4 14h16l-2-5H7l-3 5Z"/><path d="M6 14v4m12-4v4M7 18h10"/></svg>Offer seats instead</button>
+          </div>
+
           <div class="route-search-row">
             <label class="location-field">
               <span class="field-label">FROM</span>
               <span class="location-dot start"></span>
-              <input id="fromInput" list="nepalPlaces" value="Kathmandu" placeholder="Starting place" autocomplete="off" />
-              <small>City, neighbourhood or pickup point</small>
+              <input id="fromInput" list="nepalPlaces" value="Kathmandu" placeholder="Starting city or pickup point" autocomplete="off" />
             </label>
 
             <button class="swap-route" id="swapRoute" aria-label="Swap route">
@@ -79,8 +128,7 @@
             <label class="location-field">
               <span class="field-label">TO</span>
               <span class="location-dot end"></span>
-              <input id="toInput" list="nepalPlaces" value="Hetauda" placeholder="Destination" autocomplete="off" />
-              <small>City, neighbourhood or drop-off point</small>
+              <input id="toInput" list="nepalPlaces" value="Hetauda" placeholder="Destination city or drop-off point" autocomplete="off" />
             </label>
           </div>
 
@@ -99,7 +147,7 @@
               <div class="seat-stepper"><button id="seatMinus" aria-label="Decrease passengers">−</button><strong id="seatCount">1</strong><button id="seatPlus" aria-label="Increase passengers">+</button></div>
             </div>
 
-            <button class="primary-btn search-btn" id="searchRides"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 4.5 4.5"/></svg>Find rides</button>
+            <button class="primary-btn search-btn" id="searchRides"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 4.5 4.5"/></svg>Search rides</button>
           </div>
 
           <div class="popular-row">
@@ -109,24 +157,24 @@
             <button data-route="Kathmandu|Bharatpur">Kathmandu–Bharatpur</button>
             <button data-route="Kathmandu|Butwal">Kathmandu–Butwal</button>
             <button data-route="Kathmandu|Dharan">Kathmandu–Dharan</button>
-            <button data-route="Butwal|Pokhara">Butwal–Pokhara</button>
+            <button data-route="Pokhara|Baglung">Pokhara–Baglung</button>
           </div>
         </section>
 
-        <section class="trust-summary">
-          <article><span class="trust-icon"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 2.8 8.3 7 10 4.2-1.7 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-5"/></svg></span><div><strong>Visible trust status</strong><span>See exactly which checks are complete</span></div></article>
-          <article><span class="trust-icon"><svg viewBox="0 0 24 24"><path d="M5 5h14v14H5V5Z"/><path d="M8 9h8M8 13h5"/></svg></span><div><strong>Clear journey details</strong><span>Pickup, time, contribution and luggage</span></div></article>
-          <article><span class="trust-icon"><svg viewBox="0 0 24 24"><path d="M4 12c3-5 13-5 16 0-3 5-13 5-16 0Z"/><circle cx="12" cy="12" r="2"/></svg></span><div><strong>Private until accepted</strong><span>Phone and full vehicle number stay hidden</span></div></article>
+        <section class="trust-summary" aria-label="Sangai product principles">
+          <article><span class="trust-index">01</span><div><strong>Visible trust status</strong><span>See which profile and vehicle checks are complete.</span></div></article>
+          <article><span class="trust-index">02</span><div><strong>Clear journey terms</strong><span>Pickup, time, seats and contribution before requesting.</span></div></article>
+          <article><span class="trust-index">03</span><div><strong>Private until accepted</strong><span>Phone and full vehicle details stay protected.</span></div></article>
         </section>
 
         <section class="result-section" id="results">
           <div class="result-heading">
             <div><p class="route-summary" id="routeSummary">Kathmandu → Hetauda</p><h2 id="resultTitle">Available journeys</h2></div>
-            <div class="result-tools"><span id="resultCount">0 rides</span><select id="sortSelect" aria-label="Sort rides"><option value="soonest">Earliest departure</option><option value="price">Lowest price</option><option value="rating">Top rated</option></select></div>
+            <div class="result-tools"><span id="resultCount">0 rides</span><label>Sort<select id="sortSelect" aria-label="Sort rides"><option value="soonest">Earliest departure</option><option value="price">Lowest contribution</option><option value="rating">Top rated</option></select></label></div>
           </div>
 
           <div class="filter-row" id="filterRow">
-            <button class="filter-chip active" data-filter="all">All rides</button>
+            <button class="filter-chip active" data-filter="all">All journeys</button>
             <button class="filter-chip" data-filter="verified">Verified drivers</button>
             <button class="filter-chip" data-filter="women">Women preferred</button>
             <button class="filter-chip" data-filter="instant">Instant approval</button>
@@ -136,12 +184,20 @@
             <div class="ride-list" id="rideList"></div>
             <aside class="help-column">
               <article class="safety-card">
-                <div class="card-title-row"><span class="shield-badge"><svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 2.8 8.3 7 10 4.2-1.7 7-5.5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-5"/></svg></span><div><strong>Safer by design</strong><span>Simple checks before every ride.</span></div></div>
-                <ul><li>Driver identity and licence status</li><li>Vehicle number stored privately</li><li>Journey sharing and emergency contact</li></ul>
-                <button class="text-btn" data-view="safety">See safety centre →</button>
+                <div class="sidebar-label">SANGAI ASSURANCE</div>
+                <h3>Know what is verified.</h3>
+                <p>Every profile clearly shows completed checks. We never present an unverified account as verified.</p>
+                <div class="assurance-list"><span><i>✓</i>Identity status</span><span><i>✓</i>Driving licence status</span><span><i>✓</i>Vehicle status</span><span><i>✓</i>Private contact details</span></div>
+                <button class="text-btn" data-view="safety">Open safety centre <span>→</span></button>
               </article>
 
-              <article class="pilot-card"><span>ALREADY DRIVING?</span><h3>Share empty seats on your next journey.</h3><p>You choose the route, contribution and passenger before departure.</p><button class="text-btn light" data-view="offer">Offer seats →</button></article>
+              <article class="pilot-card">
+                <img src="assets/sangai-mark-outline.svg" alt="" />
+                <span>DRIVING THIS ROUTE?</span>
+                <h3>Turn an empty seat into a shared journey.</h3>
+                <p>You choose the route, contribution and passenger.</p>
+                <button class="text-btn light" data-view="offer">Offer seats <span>→</span></button>
+              </article>
             </aside>
           </div>
         </section>
@@ -212,9 +268,9 @@
         </div>
 
         <div class="journey-tabs" id="journeyTabs">
-          <button class="active" data-journey-tab="driver">As driver <span id="driverRideCount">0</span></button>
-          <button data-journey-tab="passenger">As passenger <span id="passengerRequestCount">0</span></button>
-          <button data-journey-tab="history">History <span id="historyCount">0</span></button>
+          <button class="active" data-journey-tab="driver">As driver <span id="driverRideCount">1</span></button>
+          <button data-journey-tab="passenger">As passenger <span id="passengerRequestCount">1</span></button>
+          <button data-journey-tab="history">History <span id="historyCount">2</span></button>
         </div>
 
         <div id="journeyPanel" class="journey-panel"></div>
@@ -236,28 +292,33 @@
         <div class="profile-overview-card">
           <div class="profile-main">
             <span class="profile-avatar" id="profileAvatar">S</span>
-            <div><div class="profile-name-row"><h1 id="profileName">Your profile</h1><span class="verified-label hidden" id="profileVerifiedBadge">✓ Identity verified</span></div><p id="profileMeta">Complete your profile to build trust.</p><div class="profile-rating"><strong id="profileRating">—</strong><span id="profileStats">No completed journeys yet</span></div></div>
+            <div>
+              <div class="profile-name-row"><h1 id="profileName">Your profile</h1><span class="verified-label hidden" id="profileVerifiedBadge">✓ Identity verified</span></div>
+              <p id="profileMeta">Complete your profile to build trust.</p>
+              <p class="profile-bio" id="profileBio">Add a short public introduction so people know who they are travelling with.</p>
+              <div class="profile-rating"><strong id="profileRating">—</strong><span id="profileStats">No completed journeys yet</span></div>
+            </div>
           </div>
           <button class="secondary-outline-btn" id="editProfileBtn">Edit profile</button>
         </div>
 
         <div class="profile-grid">
-          <section class="content-card">
-            <div class="content-card-head"><div><h2>Trust and verification</h2><p>Complete checks to increase acceptance.</p></div><strong id="verificationPercent">0%</strong></div>
+          <section class="content-card trust-card">
+            <div class="content-card-head"><div><span class="section-label">TRUST STATUS</span><h2>Verification</h2><p>Each check is shown separately and accurately.</p></div><strong id="verificationPercent">0%</strong></div>
             <div class="verification-progress"><span id="verificationBar"></span></div>
             <div class="verification-list" id="verificationList"></div>
-            <button class="primary-btn full-btn" data-view="safety">Complete verification</button>
+            <button class="primary-btn full-btn" data-view="safety">Review verification</button>
           </section>
 
           <section class="content-card">
-            <div class="content-card-head"><div><h2>Travel preferences</h2><p>Shown to drivers and passengers.</p></div></div>
+            <div class="content-card-head"><div><span class="section-label">YOUR JOURNEY STYLE</span><h2>Travel preferences</h2><p>Shown when someone reviews your profile.</p></div></div>
             <div class="preference-list" id="profilePreferences"><span>No smoking</span><span>Music is okay</span></div>
             <button class="secondary-outline-btn full-btn" id="editPreferencesBtn">Edit preferences</button>
           </section>
 
           <section class="content-card wide-card">
-            <div class="content-card-head"><div><h2>Recent reviews</h2><p>Reviews appear after completed journeys.</p></div></div>
-            <div class="review-list" id="profileReviewList"><div class="empty-state">Reviews appear after completed journeys.</div></div>
+            <div class="content-card-head"><div><span class="section-label">COMMUNITY HISTORY</span><h2>Reviews</h2><p>Only completed journeys can generate reviews.</p></div></div>
+            <div class="review-list" id="profileReviewList"><div class="empty-state">No reviews yet.</div></div>
           </section>
         </div>
       </div>
@@ -272,7 +333,7 @@
 
         <div class="safety-grid">
           <section class="content-card wide-card">
-            <div class="content-card-head"><div><h2>Verification checklist</h2><p>Your documents are never shown publicly.</p></div><strong id="safetyPercent">0%</strong></div>
+            <div class="content-card-head"><div><h2>Verification checklist</h2><p>Your documents are never shown publicly.</p></div><strong id="safetyPercent">75%</strong></div>
             <div class="verification-list large" id="safetyVerificationList"></div>
           </section>
 
@@ -297,7 +358,7 @@
     </section>
   </main>
 
-  <datalist id="nepalPlaces"><option value="Kathmandu"></option><option value="Kalanki"></option><option value="Koteshwor"></option><option value="New Baneshwor"></option><option value="Gaushala"></option><option value="Chabahil"></option><option value="Balaju"></option><option value="Gongabu"></option><option value="Maharajgunj"></option><option value="Kirtipur"></option><option value="Thankot"></option><option value="Satungal"></option><option value="Nagdhunga"></option><option value="Lalitpur"></option><option value="Lagankhel"></option><option value="Satdobato"></option><option value="Gwarko"></option><option value="Balkhu"></option><option value="Bhaktapur"></option><option value="Suryabinayak"></option><option value="Jagati"></option><option value="Madhyapur Thimi"></option><option value="Dhulikhel"></option><option value="Banepa"></option><option value="Panauti"></option><option value="Khurkot"></option><option value="Sindhuli"></option><option value="Bardibas"></option><option value="Daman"></option><option value="Palung"></option><option value="Naubise"></option><option value="Galchhi"></option><option value="Mugling"></option><option value="Kurintar"></option><option value="Hetauda"></option><option value="Hetauda Bus Park"></option><option value="Chauki Tole"></option><option value="Bharatpur"></option><option value="Narayangarh"></option><option value="Sauraha"></option><option value="Ratnanagar"></option><option value="Tandi"></option><option value="Pokhara"></option><option value="Lakeside"></option><option value="Prithvi Chowk"></option><option value="Bagar"></option><option value="Hemja"></option><option value="Damauli"></option><option value="Dumre"></option><option value="Bandipur"></option><option value="Gorkha"></option><option value="Waling"></option><option value="Syangja"></option><option value="Baglung"></option><option value="Kusma"></option><option value="Beni"></option><option value="Butwal"></option><option value="Traffic Chowk Butwal"></option><option value="Bhairahawa"></option><option value="Siddharthanagar"></option><option value="Lumbini"></option><option value="Tansen"></option><option value="Bardghat"></option><option value="Parasi"></option><option value="Kapilvastu"></option><option value="Birgunj"></option><option value="Simara"></option><option value="Pathlaiya"></option><option value="Kalaiya"></option><option value="Nijgadh"></option><option value="Chandrapur"></option><option value="Gaur"></option><option value="Janakpur"></option><option value="Dhalkebar"></option><option value="Lahan"></option><option value="Rajbiraj"></option><option value="Siraha"></option><option value="Jaleshwar"></option><option value="Biratnagar"></option><option value="Itahari"></option><option value="Dharan"></option><option value="Damak"></option><option value="Birtamod"></option><option value="Kakarbhitta"></option><option value="Urlabari"></option><option value="Inaruwa"></option><option value="Dhankuta"></option><option value="Nepalgunj"></option><option value="Kohalpur"></option><option value="Surkhet"></option><option value="Birendranagar"></option><option value="Dang"></option><option value="Ghorahi"></option><option value="Tulsipur"></option><option value="Lamahi"></option><option value="Bardiya"></option><option value="Gulariya"></option><option value="Dhangadhi"></option><option value="Attariya"></option><option value="Tikapur"></option><option value="Mahendranagar"></option><option value="Bhimdatta"></option><option value="Dadeldhura"></option><option value="Dipaya Silgadhi"></option><option value="Jomsom"></option><option value="Kagbeni"></option><option value="Besisahar"></option><option value="Jiri"></option><option value="Charikot"></option><option value="Bidur"></option><option value="Trishuli"></option><option value="Syabrubesi"></option></datalist>
+  <datalist id="nepalPlaces"><option value="Kathmandu"></option><option value="Kalanki"></option><option value="Koteshwor"></option><option value="New Baneshwor"></option><option value="Gaushala"></option><option value="Chabahil"></option><option value="Balaju"></option><option value="Gongabu"></option><option value="Maharajgunj"></option><option value="Kirtipur"></option><option value="Thankot"></option><option value="Satungal"></option><option value="Nagdhunga"></option><option value="Lalitpur"></option><option value="Lagankhel"></option><option value="Satdobato"></option><option value="Gwarko"></option><option value="Balkhu"></option><option value="Bhaktapur"></option><option value="Suryabinayak"></option><option value="Jagati"></option><option value="Madhyapur Thimi"></option><option value="Dhulikhel"></option><option value="Banepa"></option><option value="Panauti"></option><option value="Khurkot"></option><option value="Sindhuli"></option><option value="Bardibas"></option><option value="Daman"></option><option value="Palung"></option><option value="Naubise"></option><option value="Galchhi"></option><option value="Mugling"></option><option value="Kurintar"></option><option value="Hetauda"></option><option value="Hetauda Bus Park"></option><option value="Chauki Tole"></option><option value="Bharatpur"></option><option value="Narayangarh"></option><option value="Sauraha"></option><option value="Ratnanagar"></option><option value="Tandi"></option><option value="Pokhara"></option><option value="Lakeside"></option><option value="Prithvi Chowk"></option><option value="Bagar"></option><option value="Hemja"></option><option value="Damauli"></option><option value="Dumre"></option><option value="Bandipur"></option><option value="Gorkha"></option><option value="Waling"></option><option value="Syangja"></option><option value="Baglung"></option><option value="Kusma"></option><option value="Beni"></option><option value="Butwal"></option><option value="Traffic Chowk Butwal"></option><option value="Bhairahawa"></option><option value="Siddharthanagar"></option><option value="Lumbini"></option><option value="Tansen"></option><option value="Bardghat"></option><option value="Parasi"></option><option value="Kapilvastu"></option><option value="Birgunj"></option><option value="Simara"></option><option value="Pathlaiya"></option><option value="Kalaiya"></option><option value="Nijgadh"></option><option value="Chandrapur"></option><option value="Gaur"></option><option value="Janakpur"></option><option value="Dhalkebar"></option><option value="Lahan"></option><option value="Rajbiraj"></option><option value="Siraha"></option><option value="Jaleshwar"></option><option value="Biratnagar"></option><option value="Itahari"></option><option value="Dharan"></option><option value="Damak"></option><option value="Birtamod"></option><option value="Kakarbhitta"></option><option value="Urlabari"></option><option value="Inaruwa"></option><option value="Dhankuta"></option><option value="Nepalgunj"></option><option value="Kohalpur"></option><option value="Surkhet"></option><option value="Birendranagar"></option><option value="Dang"></option><option value="Ghorahi"></option><option value="Tulsipur"></option><option value="Lamahi"></option><option value="Bardiya"></option><option value="Gulariya"></option><option value="Dhangadhi"></option><option value="Attariya"></option><option value="Tikapur"></option><option value="Mahendranagar"></option><option value="Bhimdatta"></option><option value="Dadeldhura"></option><option value="Dipaya Silgadhi"></option><option value="Jomsom"></option><option value="Kagbeni"></option><option value="Besisahar"></option><option value="Chame"></option><option value="Jiri"></option><option value="Charikot"></option><option value="Bidur"></option><option value="Trishuli"></option><option value="Syabrubesi"></option></datalist>
 
   <nav class="mobile-nav" aria-label="Mobile navigation">
     <button class="active" data-view="home"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 4.5 4.5"/></svg><span>Find</span></button>
@@ -315,7 +376,7 @@
   <div class="modal-backdrop hidden" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
     <article class="small-modal auth-modal">
       <button class="modal-close" data-close="authModal">×</button>
-      <div class="auth-logo"><span class="brand-mark"><svg viewBox="0 0 48 48"><path d="M7 29h34l-5-10H13L7 29Z"/><path d="M11 29v4m26-4v4M14 33h20"/><circle cx="15" cy="34" r="4"/><circle cx="33" cy="34" r="4"/></svg></span><div><strong>Sangai</strong><span>Your journeys, requests and messages in one place.</span></div></div>
+      <div class="auth-logo"><img src="assets/sangai-mark.svg" alt=""/><div><strong>Sangai</strong><span>Your journeys, requests and messages.</span></div></div>
       <div class="auth-tabs"><button class="active" data-auth-tab="login">Log in</button><button data-auth-tab="signup">Create account</button></div>
       <h2 id="authTitle">Welcome back</h2>
       <p id="authSubtitle">Log in to offer seats, request rides and message privately.</p>
@@ -334,9 +395,16 @@
 
   <div class="toast-area" id="toastArea" aria-live="polite"></div>
 
-  <footer><div><strong>Sangai</strong><span>Going your way.</span></div><small>Planned intercity seat sharing · Nepal</small></footer>
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <footer class="product-footer">
+    <div class="footer-inner">
+      <div class="footer-brand"><img src="assets/sangai-mark.svg" alt=""/><div><strong>Sangai</strong><span>Going your way.</span></div></div>
+      <div class="footer-copy"><p>Planned intercity seat sharing across Nepal.</p><small>© 2026 Sangai. Built for clearer, safer shared journeys.</small></div>
+      <div class="footer-links"><button data-view="home">Find a seat</button><button data-view="offer">Offer seats</button><button data-view="safety">Safety</button><button data-view="profile">Account</button></div>
+    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="app.js"></script>
+  <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/service-worker.js").catch(()=>{}));}</script>
 </body>
 </html>

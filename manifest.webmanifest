@@ -1,17 +1,23 @@
 {
-  "name": "Sangai — Intercity Seat Sharing",
+  "name": "Sangai \u2014 Intercity Seat Sharing",
   "short_name": "Sangai",
-  "description": "Find a seat in a car already going your way.",
+  "description": "Find a seat in a private car already going your way.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f6f7f3",
-  "theme_color": "#123c31",
+  "background_color": "#faf8f4",
+  "theme_color": "#77152b",
   "icons": [
+    {
+      "src": "/assets/sangai-app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/assets/sangai-mark.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
